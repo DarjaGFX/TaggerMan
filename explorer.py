@@ -1,74 +1,134 @@
+#!/usr/bin/python3.8
 import os
 import re
-from termcolor import colored
-import mongoengine
+import sys
 import curses
+# import mongoengine
 
 screen = curses.initscr()
+curses.curs_set(False)
 curses.noecho()
 curses.cbreak()
 screen.keypad(True)
 
 
-CWD = os.getcwd()
-childir = lambda x:os.walk(x).next()[1]
-childfiles = lambda x:os.walk(x).next()[2]
-parentdir = lambda x:re.findall(r'(.*/)\w+', x)[0]
+def childir(path):
+    res = []
+    for i in os.scandir(path):
+        if os.DirEntry.is_dir(i):
+            res.append(i.name)
+    return res
 
-def show(pwd = None, mod = 0, selectedIndex = 0):
-    ### CLEAR SCREEN
-    #os.system('clear')
-    checkmark = '*'#colored('*','red',attrs=['bold'])
-    opts = [' ']*6
-    if pwd == None:
-        pwd = CWD
-    screen.addstr(0,0,'---------------------------------------------------------------------------------')
-    screen.addstr(1,0,"[{}]Insert tag\t[{}]Remove tag\t[{}]Modify tag\t[{}]Search by tag\t[{}]Exit".format(opts[0], opts[1], opts[2], opts[3], opts[4]))
-    screen.addstr(2,0,'---------------------------------------------------------------------------------')
-    screen.addstr(3,0,"[{}:>] {}".format(opts[5], pwd))
-    screen.addstr(4,0,'---------------------------------------------------------------------------------')
-    if mod == 0:
-        opts.append(' ')
-        screen.addstr(5,0,"[{}>] {}".format(opts[6], '..'))
-        opts.append(' ')
-        screen.addstr(6,0,"[{}>] {}".format(opts[7], childir(pwd)))
-        opts.append(' ')
-        screen.addstr(7,0,"[{}>] {}".format(opts[8], childfiles(pwd)))
-    else:
-        if mod == 1:
-            lst = childir(pwd)
-        else:
-            lst = childfiles(pwd)
-        for i in range(len(lst)):
-            opts.append(' ')
-            print("[{}>] {}".format(opts[6+i], lst[i]))
+
+def childfiles(path):
+    res = []
+    for i in os.scandir(path):
+        if os.DirEntry.is_file(i):
+            res.append(i.name)
+    return res
+
+
+def parentdir(path):
+    if path == '/':
+        return path
+    return re.findall(r'(.*/)\w+', path)[0]
+
+
+DONT_SHOW_HIDDEN = True
+
+
+def draw(letter, selectedIndex=0):
+    screen.clear()
+    screen.addstr(0, 0, '-'*82)
+    screen.addstr(1, 0, f"[ ]{letter[0]['text']}\t[ ]{letter[1]['text']}\t[ ]{letter[2]['text']}\t[ ]{letter[3]['text']}\t[ ]{letter[4]['text']}")
+    screen.addstr(2, 0, '-'*82)
+    screen.addstr(3, 0, f"[ :>] {letter[5]['text']}")
+    screen.addstr(4, 0, '-'*82)
+    screen.addstr(5, 0, f"[ >] {letter[6]['text']}")
+    for i in range(7, len(letter)):
+        if letter[i]['type'] == 'directory':
+            screen.addstr(letter[i]['posx'], 0, f"[ >] {letter[i]['text']}/")
+        elif letter[i]['type'] == 'file':
+            screen.addstr(letter[i]['posx'], 0, f"[ >] {letter[i]['text']}")
     curses.start_color()
     curses.use_default_colors()
-    screen.addstr(selectedIndex,1,'#', curses.color_pair(197))
-    opts[selectedIndex] = checkmark
+    curses.init_pair(1, curses.COLOR_RED, curses.COLOR_BLACK)
+    screen.addstr(
+                    letter[selectedIndex]['posx'],
+                    letter[selectedIndex]['posy'],
+                    "#",
+                    curses.color_pair(1)
+                 )  # , curses.color_pair(197))
+    screen.refresh()
+
+
+def exlpore(pwd=None):
+    # curses.start_color()
+    # curses.use_default_colors()
+    selectedIndex = 6
+    CWD = os.getcwd()
+    if pwd is None:
+        pwd = CWD
+    objs = {
+            0: {'text': 'Insert tag', 'posx': 1, 'posy': 1, 'type': 'command'},
+            1: {'text': 'Remove tag', 'posx': 1, 'posy': 17, 'type': 'command'},
+            2: {'text': 'Modify tag', 'posx': 1, 'posy': 33, 'type': 'command'},
+            3: {'text': 'Search by tag', 'posx': 1, 'posy': 49, 'type': 'command'},
+            4: {'text': 'Exit', 'posx': 1, 'posy': 73, 'type': 'command'},
+            5: {'text': pwd, 'posx': 3, 'posy': 1, 'type': 'directory'},
+            6: {'text': '..', 'posx': 5, 'posy': 1, 'type': 'directory'},
+           }
+    indx = 6
+    for d in childir(pwd):
+        if DONT_SHOW_HIDDEN and d[0] == '.':
+            continue
+        objs.update({len(objs): {'text': d, 'posx': indx, 'posy': 1, 'type': 'directory'}})
+        indx += 1
+    for f in childfiles(pwd):
+        if DONT_SHOW_HIDDEN and f[0] == '.':
+            continue
+        objs.update({len(objs): {'text': f, 'posx': indx, 'posy': 1, 'type': 'file'}})
+        indx += 1
+    draw(objs, selectedIndex)
     try:
         while True:
             char = screen.getch()
-            if char == ord('x') or char == ord('X') :
+            if char == ord('x') or char == ord('X'):
                 break
             elif char == curses.KEY_RIGHT or char == curses.KEY_DOWN:
-                if selectedIndex == len(opts)-1:
-                    return show(pwd, mod, 0)
+                if selectedIndex == len(objs)-1:
+                    selectedIndex = 0
+                    draw(objs, selectedIndex)
                 else:
-                    return show(pwd, mod, selectedIndex+1)
+                    selectedIndex += 1
+                    draw(objs, selectedIndex)
             elif char == curses.KEY_LEFT or char == curses.KEY_UP:
                 if selectedIndex == 0:
-                    return show(pwd, mod, 0)
+                    selectedIndex = len(objs)-1
+                    draw(objs, selectedIndex)
                 else:
-                    return show(pwd, mod, selectedIndex-1)
-            elif char == curses.KEY_ENTER:
-                pass
+                    selectedIndex -= 1
+                    draw(objs, selectedIndex)
+            elif char == 10:
+                if objs[selectedIndex]['type'] == 'directory':
+                    if objs[selectedIndex]['text'] == '..':
+                        return exlpore(pwd=parentdir(objs[5]['text']))
+                    return exlpore(pwd=os.path.join(pwd, objs[selectedIndex]['text']))
+    except PermissionError:
+        exlpore(pwd=pwd)
+    except:
+        pass
     finally:
         # shut down cleanly
-        curses.nocbreak(); screen.keypad(0); curses.echo()
+        curses.nocbreak()
+        screen.keypad(0)
+        curses.echo()
         curses.endwin()
 
-# try:
-#     show()
-# except:
-#     pass
+
+if __name__ == "__main__":
+    try:
+        os.chdir(os.path.abspath(sys.argv[1]))
+    except:
+        pass
+    exlpore()
