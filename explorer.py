@@ -54,7 +54,7 @@ def draw(letter, selectedIndex=0):
     curses.use_default_colors()
     curses.init_pair(1, curses.COLOR_RED, curses.COLOR_BLACK)
     curses.init_pair(2, curses.COLOR_GREEN, curses.COLOR_BLACK)
-    for i in range(len(letter)):
+    for i in range(7, len(letter)):
         if letter[i]['selected']:
             screen.addstr(
                             letter[i]['posx'],
@@ -79,13 +79,13 @@ def exlpore(pwd=None):
     if pwd is None:
         pwd = CWD
     objs = {
-            0: {'text': 'Insert tag', 'posx': 1, 'posy': 1, 'type': 'command', 'selected': False},
-            1: {'text': 'Remove tag', 'posx': 1, 'posy': 17, 'type': 'command', 'selected': False},
-            2: {'text': 'Modify tag', 'posx': 1, 'posy': 33, 'type': 'command', 'selected': False},
-            3: {'text': 'Search by tag', 'posx': 1, 'posy': 49, 'type': 'command', 'selected': False},
-            4: {'text': 'Exit', 'posx': 1, 'posy': 73, 'type': 'command', 'selected': False},
-            5: {'text': pwd, 'posx': 3, 'posy': 1, 'type': 'directory', 'selected': False},
-            6: {'text': '..', 'posx': 5, 'posy': 1, 'type': 'directory', 'selected': False},
+            0: {'text': 'Insert tag', 'posx': 1, 'posy': 1, 'type': 'command',},
+            1: {'text': 'Remove tag', 'posx': 1, 'posy': 17, 'type': 'command',},
+            2: {'text': 'Modify tag', 'posx': 1, 'posy': 33, 'type': 'command',},
+            3: {'text': 'Search by tag', 'posx': 1, 'posy': 49, 'type': 'command',},
+            4: {'text': 'Exit', 'posx': 1, 'posy': 73, 'type': 'command',},
+            5: {'text': pwd, 'posx': 3, 'posy': 1, 'type': 'directory',},
+            6: {'text': '..', 'posx': 5, 'posy': 1, 'type': 'directory',},
            }
     indx = 6
     for d in childir(pwd):
@@ -124,7 +124,8 @@ def exlpore(pwd=None):
                         return exlpore(pwd=parentdir(objs[5]['text']))
                     return exlpore(pwd=os.path.join(pwd, objs[selectedIndex]['text']))
             elif char == 32:  # Space
-                objs[selectedIndex]['selected'] = not objs[selectedIndex]['selected']
+                if 'selected' in objs[selectedIndex]:
+                    objs[selectedIndex]['selected'] = not objs[selectedIndex]['selected']
     except PermissionError:
         exlpore(pwd=pwd)
     except:
