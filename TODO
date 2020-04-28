@@ -1,0 +1,24 @@
+TODOs
+
+[X] scroll to see all folders/files of directory
+[ ] options and shortcuts [rename, copy, move, delete, new folder, ...]
+
+
+Options:
+
+in app:
+[X]    space   :       select file/folder
+[ ]    F2      :       rename
+[ ]    F3      :       search
+[ ]    Ctrl+X  :       cut
+[ ]    Ctrl+Y  :       copy
+[ ]    Ctrl+V  :       paste
+[ ]    Ctrl+N  :       NewFolder
+[X]    Ctrl+H  :       show/Dontshow Hidden Files/Folders
+
+
+
+switches:
+
+[X]    -a, --all
+                show all files/folders (show hidden):
