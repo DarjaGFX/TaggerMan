@@ -5,11 +5,21 @@ import sys
 import curses
 # import mongoengine
 
+ENTER = 10
+SPACE = 32
+CTRLX = 24
+CTRLH = 8
+
 screen = curses.initscr()
 curses.curs_set(False)
 curses.noecho()
 curses.cbreak()
 screen.keypad(True)
+
+CLIPBOARD = {
+                'Action': None,
+                'Fs': []
+            }
 
 
 def childir(path):
@@ -50,7 +60,8 @@ def draw(menu, directories, files, selectedIndex, PrintStartIndex=0):
 
     menuformat = [
         '-'*x,
-        f"[ ]{menu[0]['text']}\t[ ]{menu[1]['text']}\t[ ]{menu[2]['text']}\t[ ]{menu[3]['text']}\t[ ]{menu[4]['text']}",
+        f"[ ]{menu[0]['text']}\t[ ]{menu[1]['text']}\t[ ]{menu[2]['text']}\
+\t[ ]{menu[3]['text']}\t[ ]{menu[4]['text']}",
         '-'*x,
         f"[ :>] {menu[5]['text']}",
         '-'*x,
@@ -61,7 +72,7 @@ def draw(menu, directories, files, selectedIndex, PrintStartIndex=0):
         for i in range(len(menuformat)):
             try:
                 screen.addstr(i-PrintStartIndex, 0, menuformat[i])
-            except:
+            except Exception:
                 pass
     for i in range(len(directories)):
         try:
@@ -72,7 +83,7 @@ def draw(menu, directories, files, selectedIndex, PrintStartIndex=0):
                         f"[ >] {directories[i]['text']}/",
                         curses.color_pair(3)
                      )
-        except:
+        except Exception:
             pass
     for i in range(len(files)):
         try:
@@ -82,9 +93,8 @@ def draw(menu, directories, files, selectedIndex, PrintStartIndex=0):
                         0,
                         f"[ >] {files[i]['text']}"
                      )
-        except:
+        except Exception:
             pass
-
 
     # draw selections
     for i in range(len(directories)):
@@ -96,7 +106,7 @@ def draw(menu, directories, files, selectedIndex, PrintStartIndex=0):
                             "#",
                             curses.color_pair(2)
                          )
-        except:
+        except Exception:
             pass
     for i in range(len(files)):
         try:
@@ -107,7 +117,7 @@ def draw(menu, directories, files, selectedIndex, PrintStartIndex=0):
                             "#",
                             curses.color_pair(2)
                          )
-        except:
+        except Exception:
             pass
     # draw pointer
     if selectedIndex >= len(menu):
@@ -121,7 +131,10 @@ def draw(menu, directories, files, selectedIndex, PrintStartIndex=0):
             selectedIndex = indx
     else:
         letter = menu
-    screen.move(letter[selectedIndex]['posx']-PrintStartIndex, letter[selectedIndex]['posy'])
+    screen.move(
+                letter[selectedIndex]['posx']-PrintStartIndex,
+                letter[selectedIndex]['posy']
+               )
     screen.addstr(
                     letter[selectedIndex]['posx']-PrintStartIndex,
                     letter[selectedIndex]['posy'],
@@ -132,8 +145,7 @@ def draw(menu, directories, files, selectedIndex, PrintStartIndex=0):
 
 
 def exlpore(pwd=None):
-    # curses.start_color()
-    # curses.use_default_colors()
+    global DONT_SHOW_HIDDEN
     CWD = os.getcwd()
     if pwd is None:
         pwd = CWD
@@ -153,16 +165,35 @@ def exlpore(pwd=None):
     for d in childir(pwd):
         if DONT_SHOW_HIDDEN and d[0] == '.':
             continue
-        directories.update({indxd: {'text': d, 'posx': indxd+len(menu), 'posy': 1, 'selected': False}})
+        directories.update(
+                            {
+                                indxd: {
+                                        'text': d,
+                                        'posx': indxd+len(menu),
+                                        'posy': 1,
+                                        'selected': False
+                                        }
+                            }
+                           )
         indxd += 1
     indxf = 0
     files = {}
     for f in childfiles(pwd):
         if DONT_SHOW_HIDDEN and f[0] == '.':
             continue
-        files.update({indxf: {'text': f, 'posx': indxf+len(menu)+indxd, 'posy': 1, 'selected': False}})
+        files.update(
+                        {
+                            indxf: {
+                                    'text': f,
+                                    'posx': indxf+len(menu)+indxd,
+                                    'posy': 1,
+                                    'selected': False
+                                    }
+                        }
+                    )
         indxf += 1
     draw(menu, directories, files, selectedIndex)
+    lenAll = len(menu)+len(directories)+len(files)
     try:
         while True:
             char = screen.getch()
@@ -173,48 +204,61 @@ def exlpore(pwd=None):
                 ymax, _ = screen.getmaxyx()
                 if y == ymax-1:
                     printStartIndex += 1
-                if selectedIndex == len(menu)+len(directories)+len(files)-1:
+                if selectedIndex == lenAll-1:
                     selectedIndex = 0
                     printStartIndex = 0
-                    draw(menu, directories, files, selectedIndex, printStartIndex)
+                    draw(menu, directories, files, selectedIndex,
+                         printStartIndex)
                 else:
                     selectedIndex += 1
-                    draw(menu, directories, files, selectedIndex, printStartIndex)
+                    draw(menu, directories, files, selectedIndex,
+                         printStartIndex)
             elif char == curses.KEY_LEFT or char == curses.KEY_UP:
                 y, x = curses.getsyx()
                 ymax, _ = screen.getmaxyx()
                 if y == 0:
                     printStartIndex -= 1
                 if selectedIndex == 0:
-                    selectedIndex = len(menu)+len(directories)+len(files)-1
-                    printStartIndex = len(menu)+len(directories)+len(files) - ymax
+                    selectedIndex = lenAll-1
+                    printStartIndex = lenAll - ymax
                     if printStartIndex < 0:
                         printStartIndex = 0
-                    draw(menu, directories, files, selectedIndex, printStartIndex)
+                    draw(menu, directories, files, selectedIndex,
+                         printStartIndex)
                 else:
                     selectedIndex -= 1
-                    if selectedIndex <= len(menu)-1 and printStartIndex > menu[selectedIndex]['posx']:
+                    if (selectedIndex <= len(menu)-1
+                        and
+                            printStartIndex > menu[selectedIndex]['posx']):
                         printStartIndex = menu[selectedIndex]['posx']
-                    draw(menu, directories, files, selectedIndex, printStartIndex)
-            elif char == 10:  # Enter
-                    if selectedIndex < len(menu):
-                        if menu[selectedIndex]['text'] == '..':
-                            return exlpore(pwd=parentdir(menu[5]['text']))
-                        elif selectedIndex == 5:
-                            exlpore(pwd=pwd)
-                        else:
-                            pass # TODO: run selected action
-                    elif selectedIndex < len(menu)+len(directories):
-                        return exlpore(pwd=os.path.join(pwd, directories[selectedIndex-len(menu)]['text']))
-            elif char == 32:  # Space
+                    draw(menu, directories, files, selectedIndex,
+                         printStartIndex)
+            elif char == ENTER:
+                if selectedIndex < len(menu):
+                    if menu[selectedIndex]['text'] == '..':
+                        return exlpore(pwd=parentdir(menu[5]['text']))
+                    elif selectedIndex == 5:
+                        exlpore(pwd=pwd)
+                    else:
+                        pass  # TODO: run selected action
+                elif selectedIndex < len(menu)+len(directories):
+                    return exlpore(
+                            pwd=os.path.join(
+                                pwd,
+                                directories[selectedIndex-len(menu)]['text']))
+            elif char == SPACE:
                 if selectedIndex >= len(menu):
                     indx = selectedIndex-len(menu)
                     if indx >= len(directories):
                         indx = indx-len(directories)
                         files[indx]['selected'] = not files[indx]['selected']
                     else:
-                        directories[indx]['selected'] = not directories[indx]['selected']
-                draw(menu, directories, files, selectedIndex)
+                        directories[indx]['selected'] = \
+                            not directories[indx]['selected']
+                draw(menu, directories, files, selectedIndex, printStartIndex)
+            elif char == CTRLH:
+                DONT_SHOW_HIDDEN = not DONT_SHOW_HIDDEN
+                exlpore(pwd=pwd)
 
     except PermissionError:
         exlpore(pwd=pwd)
@@ -230,7 +274,9 @@ def exlpore(pwd=None):
 
 if __name__ == "__main__":
     try:
-        os.chdir(os.path.abspath(sys.argv[1]))
-    except IndexError:
+        if '-a' in sys.argv or '--all' in sys.argv:
+            DONT_SHOW_HIDDEN = False
+        os.chdir(os.path.abspath(sys.argv[-1]))
+    except Exception:
         pass
     exlpore()
