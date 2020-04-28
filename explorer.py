@@ -3,18 +3,15 @@ import os
 import re
 import sys
 import curses
+import shutil
+from form import OK_CANCEL_FORM
 # import mongoengine
 
 ENTER = 10
 SPACE = 32
 CTRLX = 24
 CTRLH = 8
-
-screen = curses.initscr()
-curses.curs_set(False)
-curses.noecho()
-curses.cbreak()
-screen.keypad(True)
+SHIFTDELETE = 383
 
 CLIPBOARD = {
                 'Action': None,
@@ -50,6 +47,7 @@ DONT_SHOW_HIDDEN = True
 
 
 def draw(menu, directories, files, selectedIndex, PrintStartIndex=0):
+    global screen
     y, x = screen.getmaxyx()
     screen.clear()
     curses.start_color()
@@ -119,6 +117,7 @@ def draw(menu, directories, files, selectedIndex, PrintStartIndex=0):
                          )
         except Exception:
             pass
+
     # draw pointer
     if selectedIndex >= len(menu):
         indx = selectedIndex-len(menu)
@@ -144,7 +143,42 @@ def draw(menu, directories, files, selectedIndex, PrintStartIndex=0):
     screen.refresh()
 
 
+def resetClipboard():
+    global CLIPBOARD
+    CLIPBOARD = {
+                'Action': None,
+                'Fs': []
+            }
+
+
+def permanent_delete():
+    for f in CLIPBOARD['Fs']:
+        try:
+            if os.path.exists(f):
+                if os.path.isdir(f):
+                    shutil.rmtree(f, ignore_errors=False)
+                else:
+                    os.remove(f)
+        except Exception:
+            pass
+
+
+def runaction():
+    if CLIPBOARD['Action'] == permanent_delete:
+        form = OK_CANCEL_FORM()
+        if form.show('DELETE selected file/folders PERMANENTLY?', 'DELETING'):
+            CLIPBOARD['Action']()
+
+    resetClipboard()
+
+
 def exlpore(pwd=None):
+    global screen
+    screen = curses.initscr()
+    curses.curs_set(False)
+    curses.noecho()
+    curses.cbreak()
+    screen.keypad(True)
     global DONT_SHOW_HIDDEN
     CWD = os.getcwd()
     if pwd is None:
@@ -162,6 +196,7 @@ def exlpore(pwd=None):
     printStartIndex = 0
     indxd = 0
     directories = {}
+    # Create Directories Dict
     for d in childir(pwd):
         if DONT_SHOW_HIDDEN and d[0] == '.':
             continue
@@ -178,6 +213,7 @@ def exlpore(pwd=None):
         indxd += 1
     indxf = 0
     files = {}
+    # Create Files Dict
     for f in childfiles(pwd):
         if DONT_SHOW_HIDDEN and f[0] == '.':
             continue
@@ -238,7 +274,7 @@ def exlpore(pwd=None):
                     if menu[selectedIndex]['text'] == '..':
                         return exlpore(pwd=parentdir(menu[5]['text']))
                     elif selectedIndex == 5:
-                        exlpore(pwd=pwd)
+                        return exlpore(pwd=pwd)
                     else:
                         pass  # TODO: run selected action
                 elif selectedIndex < len(menu)+len(directories):
@@ -252,18 +288,37 @@ def exlpore(pwd=None):
                     if indx >= len(directories):
                         indx = indx-len(directories)
                         files[indx]['selected'] = not files[indx]['selected']
+                        if files[indx]['selected']:
+                            CLIPBOARD['Fs'].append(
+                                os.path.join(pwd, files[indx]['text']))
+                        else:
+                            CLIPBOARD['Fs'].remove(
+                                os.path.join(pwd, files[indx]['text']))
                     else:
                         directories[indx]['selected'] = \
                             not directories[indx]['selected']
+                        if directories[indx]['selected']:
+                            CLIPBOARD['Fs'].append(
+                                os.path.join(pwd, directories[indx]['text']))
+                        else:
+                            CLIPBOARD['Fs'].remove(
+                                os.path.join(pwd, directories[indx]['text']))
                 draw(menu, directories, files, selectedIndex, printStartIndex)
             elif char == CTRLH:
                 DONT_SHOW_HIDDEN = not DONT_SHOW_HIDDEN
-                exlpore(pwd=pwd)
-
+                return exlpore(pwd=pwd)
+            # elif char == curses.KEY_F2:
+                # CLIPBOARD['Action'] = Rename
+                # runaction()
+                # return exlpore(pwd=pwd)
+            elif char == SHIFTDELETE:
+                CLIPBOARD['Action'] = permanent_delete
+                runaction()
+                return exlpore(pwd=pwd)
     except PermissionError:
-        exlpore(pwd=pwd)
+        return exlpore(pwd=pwd)
     except Exception:
-        exlpore(pwd=pwd)
+        return exlpore(pwd=pwd)
     finally:
         # shut down cleanly
         curses.nocbreak()
