@@ -4,7 +4,7 @@ import re
 import sys
 import curses
 import shutil
-from form import OK_CANCEL_FORM
+from form import BOOLEAN_FORM
 # import mongoengine
 
 ENTER = 10
@@ -163,12 +163,34 @@ def permanent_delete():
             pass
 
 
+def Move(destination):
+    for f in CLIPBOARD['Fs']:
+        try:
+            if os.path.exists(f):
+                if os.path.isdir(f):
+                    shutil.rmtree(f, ignore_errors=False)
+                else:
+                    os.remove(f)
+        except Exception:
+            pass
+
+
 def runaction():
     if CLIPBOARD['Action'] == permanent_delete:
-        form = OK_CANCEL_FORM()
-        if form.show('DELETE selected file/folders PERMANENTLY?', 'DELETING'):
+        form = BOOLEAN_FORM(True_key_Text='OK', False_key_Text='CANCEL')
+        if form.show(
+                messageTitle='Deleting These Files/Folders Permanently!',
+                messageText='\n'.join(CLIPBOARD['Fs'])  # 'DELETE selected file/folders PERMANENTLY?'
+                    ):
             CLIPBOARD['Action']()
-
+    # elif CLIPBOARD['Action'] == Move:
+        #  #if exists in destination , ask for replace or new name
+        # form = OK_CANCEL_FORM()
+        # if form.show(
+        #         messageTitle='DELETE',
+        #         messageText='DELETE selected file/folders PERMANENTLY?'
+        #             ):
+        #    CLIPBOARD['Action']()
     resetClipboard()
 
 
@@ -307,6 +329,8 @@ def exlpore(pwd=None):
             elif char == CTRLH:
                 DONT_SHOW_HIDDEN = not DONT_SHOW_HIDDEN
                 return exlpore(pwd=pwd)
+            elif char == CTRLX:
+                CLIPBOARD['Action'] = Move
             # elif char == curses.KEY_F2:
                 # CLIPBOARD['Action'] = Rename
                 # runaction()
