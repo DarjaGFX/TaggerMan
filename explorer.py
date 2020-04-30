@@ -4,7 +4,7 @@ import re
 import sys
 import curses
 import shutil
-from form import BOOLEAN_FORM, ONE_BUTTON_FORM
+from form import BOOLEAN_FORM, ONE_BUTTON_FORM, INPUT_FORM
 # import mongoengine
 
 ENTER = 10
@@ -167,15 +167,24 @@ def NewFolder(Path, FolderName='UntitledFolder'):
     try:
         os.mkdir(FolderName)
     except Exception:
-        ErrorForm = ONE_BUTTON_FORM('Ok')
         if os.path.exists(os.path.join(Path, FolderName)):
-            msg = 'Folder exists...\nchoose another name.'
+            ErrorForm = BOOLEAN_FORM('OK', 'Cancel')
+            if ErrorForm.show(
+                    messageTitle='Something went wrong!',
+                    messageText='Folder exists...\nchoose another name.'
+                 ):
+                inp = INPUT_FORM()
+                return NewFolder(
+                        Path=Path,
+                        FolderName=inp.show("Folder Name:")
+                    )
         else:
+            ErrorForm = ONE_BUTTON_FORM('Ok')
             msg = 'Permission denied'
-        ErrorForm.show(
-            title='Something went wrong!',
-            message=msg
-            )
+            ErrorForm.show(
+                title='Something went wrong!',
+                message=msg
+                )
 
 
 def Move(destination):
@@ -355,7 +364,11 @@ def exlpore(pwd=None):
                 runaction()
                 return exlpore(pwd=pwd)
             elif char == ord('n') or char == ord('N'):
-                NewFolder(Path=pwd)
+                form = INPUT_FORM()
+                NewFolder(
+                    Path=pwd,
+                    FolderName=form.show(messageTitle="Folder Name:")
+                    )
                 return exlpore(pwd=pwd)
 
     except PermissionError:
