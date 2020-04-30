@@ -187,6 +187,28 @@ def NewFolder(Path, FolderName='UntitledFolder'):
                 )
 
 
+def Rename(NewName):
+    i = 0
+    for item in CLIPBOARD['Fs']:
+        try:
+            if i == 0:
+                nn = NewName
+            else:
+                nn = f"{NewName}({i})"
+            while os.path.exists(nn):
+                i += 1
+                nn = f"{NewName}({i})"
+            os.rename(src=item, dst=os.path.join(parentdir(item), nn))
+            i += 1
+        except PermissionError:
+            ErrorForm = ONE_BUTTON_FORM('Ok')
+            msg = 'Permission denied'
+            ErrorForm.show(
+                title='Something went wrong!',
+                message=msg
+                )
+
+
 def Move(destination):
     for f in CLIPBOARD['Fs']:
         try:
@@ -207,6 +229,13 @@ def runaction():
                 messageText='\n'.join(CLIPBOARD['Fs'])
                     ):
             CLIPBOARD['Action']()
+    elif CLIPBOARD['Action'] == Rename:
+        defval = ''
+        if len(CLIPBOARD['Fs']) == 1:
+            defval = CLIPBOARD['Fs'][0]
+        inp = INPUT_FORM(defval)
+        CLIPBOARD['Action'](inp.show('New Name:'))
+
     # elif CLIPBOARD['Action'] == Move:
         #  #if exists in destination , ask for replace or new name
         # form = OK_CANCEL_FORM()
@@ -357,10 +386,10 @@ def exlpore(pwd=None):
                 return exlpore(pwd=pwd)
             elif char == CTRLX:
                 CLIPBOARD['Action'] = Move
-            # elif char == curses.KEY_F2:
-                # CLIPBOARD['Action'] = Rename
-                # runaction()
-                # return exlpore(pwd=pwd)
+            elif char == curses.KEY_F2:
+                CLIPBOARD['Action'] = Rename
+                runaction()
+                return exlpore(pwd=pwd)
             elif char == SHIFTDELETE:
                 if len(CLIPBOARD['Fs']):
                     CLIPBOARD['Action'] = permanent_delete

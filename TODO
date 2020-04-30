@@ -9,7 +9,7 @@ Options:
 
 in app:
 [X]    space        :       select file/folder
-[ ]    F2           :       rename
+[X]    F2           :       rename
 [ ]    F3           :       search
 [ ]    Ctrl+X       :       cut
 [ ]    Ctrl+Y       :       copy
