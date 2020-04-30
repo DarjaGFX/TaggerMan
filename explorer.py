@@ -197,9 +197,10 @@ def Rename(NewName):
                 nn = NewName
             else:
                 nn = f"{NewName}({i})"
-            while os.path.exists(nn):
-                i += 1
-                nn = f"{NewName}({i})"
+            if nn != item:
+                while os.path.exists(nn):
+                    i += 1
+                    nn = f"{NewName}({i})"
             os.rename(src=item, dst=os.path.join(parentdir(item), nn))
             i += 1
         except PermissionError:
@@ -309,6 +310,29 @@ def exlpore(pwd=None):
         indxf += 1
     draw(menu, directories, files, selectedIndex)
     lenAll = len(menu)+len(directories)+len(files)
+
+    def select():
+        if selectedIndex >= len(menu):
+            indx = selectedIndex-len(menu)
+            if indx >= len(directories):
+                indx = indx-len(directories)
+                files[indx]['selected'] = not files[indx]['selected']
+                if files[indx]['selected']:
+                    CLIPBOARD['Fs'].append(
+                        os.path.join(pwd, files[indx]['text']))
+                else:
+                    CLIPBOARD['Fs'].remove(
+                        os.path.join(pwd, files[indx]['text']))
+            else:
+                directories[indx]['selected'] = \
+                    not directories[indx]['selected']
+                if directories[indx]['selected']:
+                    CLIPBOARD['Fs'].append(
+                        os.path.join(pwd, directories[indx]['text']))
+                else:
+                    CLIPBOARD['Fs'].remove(
+                        os.path.join(pwd, directories[indx]['text']))
+
     try:
         while True:
             char = screen.getch()
@@ -362,26 +386,7 @@ def exlpore(pwd=None):
                                 pwd,
                                 directories[selectedIndex-len(menu)]['text']))
             elif char == SPACE:
-                if selectedIndex >= len(menu):
-                    indx = selectedIndex-len(menu)
-                    if indx >= len(directories):
-                        indx = indx-len(directories)
-                        files[indx]['selected'] = not files[indx]['selected']
-                        if files[indx]['selected']:
-                            CLIPBOARD['Fs'].append(
-                                os.path.join(pwd, files[indx]['text']))
-                        else:
-                            CLIPBOARD['Fs'].remove(
-                                os.path.join(pwd, files[indx]['text']))
-                    else:
-                        directories[indx]['selected'] = \
-                            not directories[indx]['selected']
-                        if directories[indx]['selected']:
-                            CLIPBOARD['Fs'].append(
-                                os.path.join(pwd, directories[indx]['text']))
-                        else:
-                            CLIPBOARD['Fs'].remove(
-                                os.path.join(pwd, directories[indx]['text']))
+                select()
                 draw(menu, directories, files, selectedIndex, printStartIndex)
             elif char == CTRLH:
                 DONT_SHOW_HIDDEN = not DONT_SHOW_HIDDEN
@@ -389,21 +394,31 @@ def exlpore(pwd=None):
             elif char == CTRLX:
                 CLIPBOARD['Action'] = Move
             elif char == curses.KEY_F2:
+                if not len(CLIPBOARD['Fs']):
+                    select()
                 if len(CLIPBOARD['Fs']):
                     CLIPBOARD['Action'] = Rename
                     runaction()
                 return exlpore(pwd=pwd)
             elif char == SHIFTDELETE:
+                if not len(CLIPBOARD['Fs']):
+                    select()
                 if len(CLIPBOARD['Fs']):
                     CLIPBOARD['Action'] = permanent_delete
                     runaction()
                 return exlpore(pwd=pwd)
             elif char == ord('n') or char == ord('N'):
                 form = INPUT_FORM()
-                NewFolder(
-                    Path=pwd,
-                    FolderName=form.show(messageTitle="Folder Name:")
-                    )
+                name = form.show(messageTitle="Folder Name:")
+                if name:
+                    NewFolder(
+                        Path=pwd,
+                        FolderName=name
+                        )
+                else:
+                    NewFolder(
+                        Path=pwd
+                        )
                 return exlpore(pwd=pwd)
 
     except PermissionError:
