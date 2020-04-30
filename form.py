@@ -219,7 +219,7 @@ class ONE_BUTTON_FORM():
 
 
 class INPUT_FORM():
-    def __init__(self):
+    def __init__(self, default_input=''):
         self.screen = curses.initscr()
         # curses.curs_set(False)
         # curses.noecho()
@@ -228,7 +228,7 @@ class INPUT_FORM():
         self.selected = False
         self.True_text = 'OK'
         self.False_text = 'CANCEL'
-        self.input = ''
+        self.input = default_input
 
     def draw(self, messageTitle, selected):
         self.screen.clear()
@@ -304,7 +304,7 @@ class INPUT_FORM():
                 else:
                     return None
             elif ch == curses.KEY_BACKSPACE:
-                self.input = self.input[0:-2]
+                self.input = self.input[0:-1]
                 self.draw(messageTitle, self.selected)
             else:
                 self.input += chr(ch)
