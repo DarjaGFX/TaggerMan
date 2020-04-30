@@ -4,7 +4,7 @@ import re
 import sys
 import curses
 import shutil
-from form import BOOLEAN_FORM
+from form import BOOLEAN_FORM, ONE_BUTTON_FORM
 # import mongoengine
 
 ENTER = 10
@@ -163,6 +163,21 @@ def permanent_delete():
             pass
 
 
+def NewFolder(Path, FolderName='UntitledFolder'):
+    try:
+        os.mkdir(FolderName)
+    except Exception:
+        ErrorForm = ONE_BUTTON_FORM('Ok')
+        if os.path.exists(os.path.join(Path, FolderName)):
+            msg = 'Folder exists...\nchoose another name.'
+        else:
+            msg = 'Permission denied'
+        ErrorForm.show(
+            title='Something went wrong!',
+            message=msg
+            )
+
+
 def Move(destination):
     for f in CLIPBOARD['Fs']:
         try:
@@ -180,7 +195,7 @@ def runaction():
         form = BOOLEAN_FORM(True_key_Text='OK', False_key_Text='CANCEL')
         if form.show(
                 messageTitle='Deleting These Files/Folders Permanently!',
-                messageText='\n'.join(CLIPBOARD['Fs'])  # 'DELETE selected file/folders PERMANENTLY?'
+                messageText='\n'.join(CLIPBOARD['Fs'])
                     ):
             CLIPBOARD['Action']()
     # elif CLIPBOARD['Action'] == Move:
@@ -339,6 +354,10 @@ def exlpore(pwd=None):
                 CLIPBOARD['Action'] = permanent_delete
                 runaction()
                 return exlpore(pwd=pwd)
+            elif char == ord('n') or char == ord('N'):
+                NewFolder(Path=pwd)
+                return exlpore(pwd=pwd)
+
     except PermissionError:
         return exlpore(pwd=pwd)
     except Exception:
