@@ -14,7 +14,7 @@ in app:
 [ ]    Ctrl+X       :       cut
 [ ]    Ctrl+Y       :       copy
 [ ]    Ctrl+V       :       paste
-[ ]    Ctrl+N       :       NewFolder
+[X]    N,n          :       NewFolder
 [X]    Ctrl+H       :       show/Dontshow Hidden Files/Folders
 [X]    Shift+Del    :       permanently Delete All Selected Files/Folders
 
