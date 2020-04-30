@@ -16,7 +16,7 @@ class BOOLEAN_FORM():
         self.startIndex = 0
 
     def draw(self, messageTitle, messageText, selected, startIndex=0):
-        self.screen.clear()
+        # self.screen.clear()
         curses.start_color()
         curses.use_default_colors()
         curses.init_pair(1, curses.COLOR_BLACK, curses.COLOR_GREEN)
@@ -130,7 +130,7 @@ class ONE_BUTTON_FORM():
         self.startIndex = 0
 
     def draw(self, messageTitle, messageText, startIndex=0):
-        self.screen.clear()
+        # self.screen.clear()
         curses.start_color()
         curses.use_default_colors()
         curses.init_pair(1, curses.COLOR_BLACK, curses.COLOR_YELLOW)
@@ -231,7 +231,7 @@ class INPUT_FORM():
         self.input = default_input
 
     def draw(self, messageTitle, selected):
-        self.screen.clear()
+        # self.screen.clear()
         curses.start_color()
         curses.use_default_colors()
         curses.init_pair(1, curses.COLOR_BLACK, curses.COLOR_GREEN)
