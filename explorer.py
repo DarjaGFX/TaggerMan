@@ -219,16 +219,18 @@ def runaction():
 
 
 def exlpore(pwd=None):
+    if CLIPBOARD['Action'] is None:
+        resetClipboard()
+    global DONT_SHOW_HIDDEN
     global screen
     screen = curses.initscr()
     curses.curs_set(False)
     curses.noecho()
     curses.cbreak()
     screen.keypad(True)
-    global DONT_SHOW_HIDDEN
-    CWD = os.getcwd()
     if pwd is None:
-        pwd = CWD
+        pwd = os.getcwd()
+    os.chdir(pwd)
     menu = {
             0: {'text': 'Insert tag', 'posx': 1, 'posy': 1},
             1: {'text': 'Remove tag', 'posx': 1, 'posy': 17},
@@ -360,9 +362,10 @@ def exlpore(pwd=None):
                 # runaction()
                 # return exlpore(pwd=pwd)
             elif char == SHIFTDELETE:
-                CLIPBOARD['Action'] = permanent_delete
-                runaction()
-                return exlpore(pwd=pwd)
+                if len(CLIPBOARD['Fs']):
+                    CLIPBOARD['Action'] = permanent_delete
+                    runaction()
+                    return exlpore(pwd=pwd)
             elif char == ord('n') or char == ord('N'):
                 form = INPUT_FORM()
                 NewFolder(
