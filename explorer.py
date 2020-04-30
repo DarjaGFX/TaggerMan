@@ -188,6 +188,8 @@ def NewFolder(Path, FolderName='UntitledFolder'):
 
 
 def Rename(NewName):
+    if NewName is None:
+        return
     i = 0
     for item in CLIPBOARD['Fs']:
         try:
@@ -387,14 +389,15 @@ def exlpore(pwd=None):
             elif char == CTRLX:
                 CLIPBOARD['Action'] = Move
             elif char == curses.KEY_F2:
-                CLIPBOARD['Action'] = Rename
-                runaction()
+                if len(CLIPBOARD['Fs']):
+                    CLIPBOARD['Action'] = Rename
+                    runaction()
                 return exlpore(pwd=pwd)
             elif char == SHIFTDELETE:
                 if len(CLIPBOARD['Fs']):
                     CLIPBOARD['Action'] = permanent_delete
                     runaction()
-                    return exlpore(pwd=pwd)
+                return exlpore(pwd=pwd)
             elif char == ord('n') or char == ord('N'):
                 form = INPUT_FORM()
                 NewFolder(
