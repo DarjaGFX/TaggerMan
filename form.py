@@ -24,7 +24,13 @@ class BOOLEAN_FORM():
         ymax, xmax = self.screen.getmaxyx()
         x_start = int(xmax/4)
         y_start = int(ymax/4)
-
+        for j in range(x_start, xmax):
+            for i in range(y_start-4, ymax):
+                self.screen.move(i, j)
+                try:
+                    self.screen.addch(i, j, ' ')
+                except Exception:
+                    pass
         for i in range(x_start, x_start*3+1):
             self.screen.move(y_start-4, i)
             self.screen.addstr('=')
@@ -137,7 +143,13 @@ class ONE_BUTTON_FORM():
         ymax, xmax = self.screen.getmaxyx()
         x_start = int(xmax/4)
         y_start = int(ymax/4)
-
+        for j in range(x_start, xmax):
+            for i in range(y_start-4, ymax):
+                self.screen.move(i, j)
+                try:
+                    self.screen.addch(i, j, ' ')
+                except Exception:
+                    pass
         for i in range(x_start, x_start*3+1):
             self.screen.move(y_start-4, i)
             self.screen.addstr('=')
@@ -239,7 +251,13 @@ class INPUT_FORM():
         ymax, xmax = self.screen.getmaxyx()
         x_start = int(xmax/4)
         y_start = int(ymax/4)
-
+        for j in range(x_start, xmax):
+            for i in range(y_start-4, ymax):
+                self.screen.move(i, j)
+                try:
+                    self.screen.addch(i, j, ' ')
+                except Exception:
+                    pass
         for i in range(x_start, x_start*3+1):
             self.screen.move(y_start-4, i)
             self.screen.addstr('=')
