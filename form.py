@@ -94,7 +94,7 @@ class BOOLEAN_FORM():
         for ml in messageLines[startIndex:]:
             x = (2*x_start) - int(len(ml)/2)
             y += 2
-            if y > end: 
+            if y > end:
                 break
             self.screen.move(y, x)
             self.screen.addstr(ml)
@@ -311,7 +311,7 @@ class INPUT_FORM():
                 self.selected = not self.selected
                 self.draw(messageTitle, self.selected)
             elif ch == ENTER:
-                if self.selected:    
+                if self.selected:
                     curses.nocbreak()
                     self.screen.keypad(0)
                     curses.echo()

@@ -11,14 +11,16 @@ in app:
 [X]    space        :       select file/folder
 [X]    F2           :       rename
 [ ]    F3           :       search
-[ ]    Ctrl+X       :       cut
-[ ]    Ctrl+Y       :       copy
-[ ]    Ctrl+V       :       paste
+[X]    X,x          :       cut
+[X]    C,c          :       copy
+[ ]    V,v          :       paste
 [X]    N,n          :       NewFolder
 [X]    Ctrl+H       :       show/Dontshow Hidden Files/Folders
 [X]    Shift+Del    :       permanently Delete All Selected Files/Folders
-
-
+[ ]    Ctrl+Home    :       Top of page
+[ ]    Ctrl+End     :       End of page
+[ ]    Home         :       Top of screen
+[ ]    End          :       End of screen
 
 switches:
 

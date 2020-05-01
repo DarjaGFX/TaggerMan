@@ -9,7 +9,6 @@ from form import BOOLEAN_FORM, ONE_BUTTON_FORM, INPUT_FORM
 
 ENTER = 10
 SPACE = 32
-CTRLX = 24
 CTRLH = 8
 SHIFTDELETE = 383
 
@@ -212,6 +211,10 @@ def Rename(NewName):
                 )
 
 
+def Copy():
+    pass
+
+
 def Move(destination):
     for f in CLIPBOARD['Fs']:
         try:
@@ -391,8 +394,19 @@ def exlpore(pwd=None):
             elif char == CTRLH:
                 DONT_SHOW_HIDDEN = not DONT_SHOW_HIDDEN
                 return exlpore(pwd=pwd)
-            elif char == CTRLX:
-                CLIPBOARD['Action'] = Move
+            elif char == ord('x') or char == ord('X'):
+                if not len(CLIPBOARD['Fs']):
+                    select()
+                if len(CLIPBOARD['Fs']):
+                    CLIPBOARD['Action'] = Move
+            elif char == ord('c') or char == ord('C'):
+                if not len(CLIPBOARD['Fs']):
+                    select()
+                if len(CLIPBOARD['Fs']):
+                    CLIPBOARD['Action'] = Copy
+            elif char == ord('v') or char == ord('V'):
+                if len(CLIPBOARD) and CLIPBOARD['Action'] in [Move, Copy]:
+                    runaction()
             elif char == curses.KEY_F2:
                 if not len(CLIPBOARD['Fs']):
                     select()
