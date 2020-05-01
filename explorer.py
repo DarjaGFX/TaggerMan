@@ -10,6 +10,10 @@ from form import BOOLEAN_FORM, ONE_BUTTON_FORM, INPUT_FORM
 ENTER = 10
 SPACE = 32
 CTRLH = 8
+HOME = 262
+END = 360
+CTRLHOME = 535
+CTRLEND = 530
 SHIFTDELETE = 383
 
 CLIPBOARD = {
@@ -341,6 +345,32 @@ def exlpore(pwd=None):
             char = screen.getch()
             if char == ord('q') or char == ord('Q'):
                 break
+            elif char == ord('x') or char == ord('X'):
+                if not len(CLIPBOARD['Fs']):
+                    select()
+                if len(CLIPBOARD['Fs']):
+                    CLIPBOARD['Action'] = Move
+            elif char == ord('c') or char == ord('C'):
+                if not len(CLIPBOARD['Fs']):
+                    select()
+                if len(CLIPBOARD['Fs']):
+                    CLIPBOARD['Action'] = Copy
+            elif char == ord('v') or char == ord('V'):
+                if len(CLIPBOARD) and CLIPBOARD['Action'] in [Move, Copy]:
+                    runaction()
+            elif char == ord('n') or char == ord('N'):
+                form = INPUT_FORM()
+                name = form.show(messageTitle="Folder Name:")
+                if name:
+                    NewFolder(
+                        Path=pwd,
+                        FolderName=name
+                        )
+                else:
+                    NewFolder(
+                        Path=pwd
+                        )
+                return exlpore(pwd=pwd)
             elif char == curses.KEY_RIGHT or char == curses.KEY_DOWN:
                 y, _ = curses.getsyx()
                 ymax, _ = screen.getmaxyx()
@@ -375,6 +405,13 @@ def exlpore(pwd=None):
                         printStartIndex = menu[selectedIndex]['posx']
                     draw(menu, directories, files, selectedIndex,
                          printStartIndex)
+            elif char == curses.KEY_F2:
+                if not len(CLIPBOARD['Fs']):
+                    select()
+                if len(CLIPBOARD['Fs']):
+                    CLIPBOARD['Action'] = Rename
+                    runaction()
+                return exlpore(pwd=pwd)
             elif char == ENTER:
                 if selectedIndex < len(menu):
                     if menu[selectedIndex]['text'] == '..':
@@ -394,26 +431,6 @@ def exlpore(pwd=None):
             elif char == CTRLH:
                 DONT_SHOW_HIDDEN = not DONT_SHOW_HIDDEN
                 return exlpore(pwd=pwd)
-            elif char == ord('x') or char == ord('X'):
-                if not len(CLIPBOARD['Fs']):
-                    select()
-                if len(CLIPBOARD['Fs']):
-                    CLIPBOARD['Action'] = Move
-            elif char == ord('c') or char == ord('C'):
-                if not len(CLIPBOARD['Fs']):
-                    select()
-                if len(CLIPBOARD['Fs']):
-                    CLIPBOARD['Action'] = Copy
-            elif char == ord('v') or char == ord('V'):
-                if len(CLIPBOARD) and CLIPBOARD['Action'] in [Move, Copy]:
-                    runaction()
-            elif char == curses.KEY_F2:
-                if not len(CLIPBOARD['Fs']):
-                    select()
-                if len(CLIPBOARD['Fs']):
-                    CLIPBOARD['Action'] = Rename
-                    runaction()
-                return exlpore(pwd=pwd)
             elif char == SHIFTDELETE:
                 if not len(CLIPBOARD['Fs']):
                     select()
@@ -421,19 +438,16 @@ def exlpore(pwd=None):
                     CLIPBOARD['Action'] = permanent_delete
                     runaction()
                 return exlpore(pwd=pwd)
-            elif char == ord('n') or char == ord('N'):
-                form = INPUT_FORM()
-                name = form.show(messageTitle="Folder Name:")
-                if name:
-                    NewFolder(
-                        Path=pwd,
-                        FolderName=name
-                        )
-                else:
-                    NewFolder(
-                        Path=pwd
-                        )
-                return exlpore(pwd=pwd)
+            elif char == CTRLHOME:
+                selectedIndex = 0
+                printStartIndex = 0
+                draw(menu, directories, files, selectedIndex, printStartIndex)
+            elif char == CTRLEND:
+                selectedIndex = lenAll-1
+                printStartIndex = lenAll - ymax
+                if printStartIndex < 0:
+                    printStartIndex = 0
+                draw(menu, directories, files, selectedIndex, printStartIndex)
 
     except PermissionError:
         return exlpore(pwd=pwd)
