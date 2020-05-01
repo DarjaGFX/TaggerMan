@@ -19,8 +19,10 @@ in app:
 [X]    Shift+Del    :       permanently Delete All Selected Files/Folders
 [X]    Ctrl+Home    :       Top of page
 [X]    Ctrl+End     :       End of page
-[ ]    Home         :       Top of screen
-[ ]    End          :       End of screen
+[X]    Home         :       Top of current screen
+[X]    End          :       End of current screen
+[X]    PageUp       :       One Page up
+[X]    PageDown     :       One Page Down
 
 switches:
 

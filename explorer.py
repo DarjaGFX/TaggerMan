@@ -15,6 +15,9 @@ END = 360
 CTRLHOME = 535
 CTRLEND = 530
 SHIFTDELETE = 383
+PAGEUP = 339
+PAGEDOWN = 338
+
 
 CLIPBOARD = {
                 'Action': None,
@@ -343,6 +346,7 @@ def exlpore(pwd=None):
     try:
         while True:
             char = screen.getch()
+            ymax, _ = screen.getmaxyx()
             if char == ord('q') or char == ord('Q'):
                 break
             elif char == ord('x') or char == ord('X'):
@@ -373,7 +377,6 @@ def exlpore(pwd=None):
                 return exlpore(pwd=pwd)
             elif char == curses.KEY_RIGHT or char == curses.KEY_DOWN:
                 y, _ = curses.getsyx()
-                ymax, _ = screen.getmaxyx()
                 if y == ymax-1:
                     printStartIndex += 1
                 if selectedIndex == lenAll-1:
@@ -447,6 +450,35 @@ def exlpore(pwd=None):
                 printStartIndex = lenAll - ymax
                 if printStartIndex < 0:
                     printStartIndex = 0
+                draw(menu, directories, files, selectedIndex, printStartIndex)
+            elif char == HOME:
+                selectedIndex = printStartIndex
+                draw(menu, directories, files, selectedIndex, printStartIndex)
+            elif char == END:
+                if printStartIndex+ymax > lenAll:
+                    selectedIndex = lenAll-1
+                else:
+                    selectedIndex = printStartIndex+ymax-1
+                draw(menu, directories, files, selectedIndex, printStartIndex)
+            elif char == PAGEUP:
+                if printStartIndex - ymax < 0:
+                    printStartIndex = 0
+                else:
+                    printStartIndex -= ymax
+                if selectedIndex - ymax < 0:
+                    selectedIndex = 0
+                else:
+                    selectedIndex -= ymax
+                draw(menu, directories, files, selectedIndex, printStartIndex)
+            elif char == PAGEDOWN:
+                if printStartIndex + ymax > lenAll-ymax:
+                    printStartIndex = lenAll-ymax
+                else:
+                    printStartIndex += ymax
+                if selectedIndex + ymax > lenAll-1:
+                    selectedIndex = lenAll-1
+                else:
+                    selectedIndex += ymax
                 draw(menu, directories, files, selectedIndex, printStartIndex)
 
     except PermissionError:
