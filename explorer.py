@@ -223,15 +223,7 @@ def Copy():
 
 
 def Move(destination):
-    for f in CLIPBOARD['Fs']:
-        try:
-            if os.path.exists(f):
-                if os.path.isdir(f):
-                    shutil.rmtree(f, ignore_errors=False)
-                else:
-                    os.remove(f)
-        except Exception:
-            pass
+    pass
 
 
 def runaction():
@@ -364,7 +356,7 @@ def exlpore(pwd=None):
                     runaction()
             elif char == ord('n') or char == ord('N'):
                 form = INPUT_FORM()
-                name = form.show(messageTitle="Folder Name:")
+                name = form.show(messageTitle="Folder Name (will be set automaticly if cancel):")
                 if name:
                     NewFolder(
                         Path=pwd,

@@ -1,6 +1,7 @@
 import curses
 
 ENTER = 10
+ESCAPE = 27
 
 
 class BOOLEAN_FORM():
@@ -106,23 +107,25 @@ class BOOLEAN_FORM():
             if ch == curses.KEY_RIGHT or ch == curses.KEY_LEFT:
                 self.selected = not self.selected
                 self.draw(messageTitle, messageText, self.selected)
-            if ch == curses.KEY_UP:
+            elif ch == curses.KEY_UP:
                 if self.startIndex > 0:
                     self.startIndex -= 1
                 else:
                     self.startIndex = 0
                 self.draw(
                     messageTitle, messageText, self.selected, self.startIndex)
-            if ch == curses.KEY_DOWN:
+            elif ch == curses.KEY_DOWN:
                 self.startIndex += 1
                 self.draw(
                     messageTitle, messageText, self.selected, self.startIndex)
-            if ch == ENTER:
+            elif ch == ENTER:
                 curses.nocbreak()
                 self.screen.keypad(0)
                 curses.echo()
                 curses.endwin()
                 return self.selected
+            elif ch == ESCAPE:
+                return False
 
 
 class ONE_BUTTON_FORM():
@@ -219,10 +222,10 @@ class ONE_BUTTON_FORM():
                 else:
                     self.startIndex = 0
                 self.draw(title, message, self.startIndex)
-            if ch == curses.KEY_DOWN:
+            elif ch == curses.KEY_DOWN:
                 self.startIndex += 1
                 self.draw(title, message, self.startIndex)
-            if ch == ENTER:
+            elif ch == ENTER:
                 curses.nocbreak()
                 self.screen.keypad(0)
                 curses.echo()
@@ -310,6 +313,8 @@ class INPUT_FORM():
             if ch == curses.KEY_RIGHT or ch == curses.KEY_LEFT:
                 self.selected = not self.selected
                 self.draw(messageTitle, self.selected)
+            elif ch == ESCAPE:
+                return None
             elif ch == ENTER:
                 if self.selected:
                     curses.nocbreak()
