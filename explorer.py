@@ -17,6 +17,7 @@ CTRLEND = 530
 SHIFTDELETE = 383
 PAGEUP = 339
 PAGEDOWN = 338
+VERBOS = False
 
 
 CLIPBOARD = {
@@ -222,8 +223,28 @@ def Copy():
     pass
 
 
-def Move(destination):
-    pass
+def Move():
+    des = os.getcwd()
+    for i in CLIPBOARD['Fs']:
+        name = i.split('/')[-1]
+        try:
+            shutil.move(i, os.path.join(des, name))
+        except PermissionError:
+            if VERBOS:
+                ErrorForm = ONE_BUTTON_FORM('Ok')
+                msg = 'Permission denied'
+                ErrorForm.show(
+                    title='Something went wrong!',
+                    message=msg
+                    )
+        except Exception:
+            if VERBOS:
+                ErrorForm = ONE_BUTTON_FORM('Ok')
+                msg = 'Something went wrong!'
+                ErrorForm.show(
+                    title=f'{i} could not be moved',
+                    message=msg
+                    )
 
 
 def runaction():
@@ -241,6 +262,8 @@ def runaction():
         inp = INPUT_FORM(defval)
         CLIPBOARD['Action'](inp.show('New Name:'))
 
+    elif CLIPBOARD["Action"] == Move:
+        Move()
     # elif CLIPBOARD['Action'] == Move:
         #  #if exists in destination , ask for replace or new name
         # form = OK_CANCEL_FORM()
@@ -354,6 +377,7 @@ def exlpore(pwd=None):
             elif char == ord('v') or char == ord('V'):
                 if len(CLIPBOARD) and CLIPBOARD['Action'] in [Move, Copy]:
                     runaction()
+                    return exlpore(pwd=pwd)
             elif char == ord('n') or char == ord('N'):
                 form = INPUT_FORM()
                 name = form.show(messageTitle="Folder Name (will be set automaticly if cancel):")
@@ -489,6 +513,8 @@ if __name__ == "__main__":
     try:
         if '-a' in sys.argv or '--all' in sys.argv:
             DONT_SHOW_HIDDEN = False
+        if '-v' in sys.argv or '--VERBOS' in sys.argv:
+            VERBOS = True
         os.chdir(os.path.abspath(sys.argv[-1]))
     except Exception:
         pass

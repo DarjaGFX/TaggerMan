@@ -12,8 +12,8 @@ in app:
 [X]    F2           :       rename
 [ ]    F3           :       search
 [X]    X,x          :       cut
-[X]    C,c          :       copy
-[ ]    V,v          :       paste
+[ ]    C,c          :       copy
+[X]    V,v          :       paste
 [X]    N,n          :       NewFolder
 [X]    Ctrl+H       :       show/Dontshow Hidden Files/Folders
 [X]    Shift+Del    :       permanently Delete All Selected Files/Folders
