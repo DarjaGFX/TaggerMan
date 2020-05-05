@@ -151,18 +151,18 @@ class MESSAGEBOX():
 
         # Print MessageBox Buttons
         for indx, button in enumerate(self.Buttons):
-            curses.init_pair(indx, button['ForeColor'], button['BackColor'])
+            curses.init_pair(indx+1, button['ForeColor'], button['BackColor'])
             pos_x = (
                 x_start+(
-                            (indx+1)*int(
-                                            (2*x_start)/(len(self.KEYS)+1)
+                            (len(self.Buttons)-indx)*int(
+                                            (2*x_start)/(len(self.Buttons)+1)
                                         )
                         )
                     ) - int(len(button['Text'])/2)
             self.screen.move(y_start*3-2, pos_x)
-            if self.selected == 0:
+            if self.selected == indx:
                 self.screen.addstr(
-                    '['+button['Text']+']', curses.color_pair(1)
+                    '['+button['Text']+']', curses.color_pair(indx+1)
                                   )
             else:
                 self.screen.addstr('['+button['Text']+']')
