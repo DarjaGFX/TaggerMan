@@ -255,33 +255,6 @@ def Rename(NewName):
 
 
 def Copy():
-    replaceMSGBOX = MESSAGEBOX([
-        {
-            'Text': 'CANCEL',
-            'ForeColor': COLOR['BLACK'],
-            'BackColor': COLOR['RED']
-        },
-        {
-            'Text': 'REPLACE',
-            'ForeColor': COLOR['BLACK'],
-            'BackColor': COLOR['GREEN']
-        },
-        {
-            'Text': 'REPLACE ALL',
-            'ForeColor': COLOR['BLACK'],
-            'BackColor': COLOR['YELLOW']
-        },
-        {
-            'Text': 'SKIP',
-            'ForeColor': COLOR['BLACK'],
-            'BackColor': COLOR['GREEN']
-        },
-        {
-            'Text': 'SKIP ALL',
-            'ForeColor': COLOR['BLACK'],
-            'BackColor': COLOR['YELLOW']
-        }
-    ])
     des = os.getcwd()
     replaceAll_Flag = False
     skipAll_Flag = False
@@ -303,6 +276,33 @@ def Copy():
                             if skipAll_Flag:
                                 continue
                             if not replaceAll_Flag:
+                                replaceMSGBOX = MESSAGEBOX([
+                                    {
+                                        'Text': 'CANCEL',
+                                        'ForeColor': COLOR['BLACK'],
+                                        'BackColor': COLOR['RED']
+                                    },
+                                    {
+                                        'Text': 'REPLACE',
+                                        'ForeColor': COLOR['BLACK'],
+                                        'BackColor': COLOR['GREEN']
+                                    },
+                                    {
+                                        'Text': 'REPLACE ALL',
+                                        'ForeColor': COLOR['BLACK'],
+                                        'BackColor': COLOR['YELLOW']
+                                    },
+                                    {
+                                        'Text': 'SKIP',
+                                        'ForeColor': COLOR['BLACK'],
+                                        'BackColor': COLOR['GREEN']
+                                    },
+                                    {
+                                        'Text': 'SKIP ALL',
+                                        'ForeColor': COLOR['BLACK'],
+                                        'BackColor': COLOR['YELLOW']
+                                    }
+                                ])
                                 response = replaceMSGBOX.show(
                                     messageTitle=f'File Exists',
                                     messageText=f"{new_file_name} Already Exists.\nreplace it?")
@@ -321,6 +321,33 @@ def Copy():
                     if skipAll_Flag:
                         continue
                     if not replaceAll_Flag:
+                        replaceMSGBOX = MESSAGEBOX([
+                                    {
+                                        'Text': 'CANCEL',
+                                        'ForeColor': COLOR['BLACK'],
+                                        'BackColor': COLOR['RED']
+                                    },
+                                    {
+                                        'Text': 'REPLACE',
+                                        'ForeColor': COLOR['BLACK'],
+                                        'BackColor': COLOR['GREEN']
+                                    },
+                                    {
+                                        'Text': 'REPLACE ALL',
+                                        'ForeColor': COLOR['BLACK'],
+                                        'BackColor': COLOR['YELLOW']
+                                    },
+                                    {
+                                        'Text': 'SKIP',
+                                        'ForeColor': COLOR['BLACK'],
+                                        'BackColor': COLOR['GREEN']
+                                    },
+                                    {
+                                        'Text': 'SKIP ALL',
+                                        'ForeColor': COLOR['BLACK'],
+                                        'BackColor': COLOR['YELLOW']
+                                    }
+                                ])
                         response = replaceMSGBOX.show(
                             messageTitle=f'File Exists',
                             messageText=f"{new_name} Already Exists.\nreplace it?")
@@ -364,33 +391,6 @@ def Copy():
 
 
 def Move():
-    replaceMSGBOX = MESSAGEBOX([
-        {
-            'Text': 'CANCEL',
-            'ForeColor': COLOR['BLACK'],
-            'BackColor': COLOR['RED']
-        },
-        {
-            'Text': 'REPLACE',
-            'ForeColor': COLOR['BLACK'],
-            'BackColor': COLOR['GREEN']
-        },
-        {
-            'Text': 'REPLACE ALL',
-            'ForeColor': COLOR['BLACK'],
-            'BackColor': COLOR['YELLOW']
-        },
-        {
-            'Text': 'SKIP',
-            'ForeColor': COLOR['BLACK'],
-            'BackColor': COLOR['GREEN']
-        },
-        {
-            'Text': 'SKIP ALL',
-            'ForeColor': COLOR['BLACK'],
-            'BackColor': COLOR['YELLOW']
-        }
-    ])
     des = os.getcwd()
     replaceAll_Flag = False
     skipAll_Flag = False
@@ -412,6 +412,33 @@ def Move():
                             if skipAll_Flag:
                                 continue
                             if not replaceAll_Flag:
+                                replaceMSGBOX = MESSAGEBOX([
+                                    {
+                                        'Text': 'CANCEL',
+                                        'ForeColor': COLOR['BLACK'],
+                                        'BackColor': COLOR['RED']
+                                    },
+                                    {
+                                        'Text': 'REPLACE',
+                                        'ForeColor': COLOR['BLACK'],
+                                        'BackColor': COLOR['GREEN']
+                                    },
+                                    {
+                                        'Text': 'REPLACE ALL',
+                                        'ForeColor': COLOR['BLACK'],
+                                        'BackColor': COLOR['YELLOW']
+                                    },
+                                    {
+                                        'Text': 'SKIP',
+                                        'ForeColor': COLOR['BLACK'],
+                                        'BackColor': COLOR['GREEN']
+                                    },
+                                    {
+                                        'Text': 'SKIP ALL',
+                                        'ForeColor': COLOR['BLACK'],
+                                        'BackColor': COLOR['YELLOW']
+                                    }
+                                ])
                                 response = replaceMSGBOX.show(
                                     messageTitle=f'File Exists',
                                     messageText=f"{new_file_name} Already Exists.\nreplace it?")
@@ -431,6 +458,33 @@ def Move():
                     if skipAll_Flag:
                         continue
                     if not replaceAll_Flag:
+                        replaceMSGBOX = MESSAGEBOX([
+                            {
+                                'Text': 'CANCEL',
+                                'ForeColor': COLOR['BLACK'],
+                                'BackColor': COLOR['RED']
+                            },
+                            {
+                                'Text': 'REPLACE',
+                                'ForeColor': COLOR['BLACK'],
+                                'BackColor': COLOR['GREEN']
+                            },
+                            {
+                                'Text': 'REPLACE ALL',
+                                'ForeColor': COLOR['BLACK'],
+                                'BackColor': COLOR['YELLOW']
+                            },
+                            {
+                                'Text': 'SKIP',
+                                'ForeColor': COLOR['BLACK'],
+                                'BackColor': COLOR['GREEN']
+                            },
+                            {
+                                'Text': 'SKIP ALL',
+                                'ForeColor': COLOR['BLACK'],
+                                'BackColor': COLOR['YELLOW']
+                            }
+                        ])
                         response = replaceMSGBOX.show(
                             messageTitle=f'File Exists',
                             messageText=f"{new_name} Already Exists.\nreplace it?")
