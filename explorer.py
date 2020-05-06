@@ -270,10 +270,21 @@ def Copy():
             'Text': 'REPLACE ALL',
             'ForeColor': COLOR['BLACK'],
             'BackColor': COLOR['YELLOW']
+        },
+        {
+            'Text': 'SKIP',
+            'ForeColor': COLOR['BLACK'],
+            'BackColor': COLOR['GREEN']
+        },
+        {
+            'Text': 'SKIP ALL',
+            'ForeColor': COLOR['BLACK'],
+            'BackColor': COLOR['YELLOW']
         }
     ])
     des = os.getcwd()
     replaceAll_Flag = False
+    skipAll_Flag = False
     for i in CLIPBOARD['Fs']:
         name = i.split('/')[-1]
         try:
@@ -289,25 +300,37 @@ def Copy():
                     for ffile in f:
                         new_file_name = os.path.join(nr, ffile)
                         if os.path.exists(new_file_name):
+                            if skipAll_Flag:
+                                continue
                             if not replaceAll_Flag:
                                 response = replaceMSGBOX.show(
                                     messageTitle=f'File Exists',
                                     messageText=f"{new_file_name} Already Exists.\nreplace it?")
+                                if response == 4:
+                                    skipAll_Flag = True
                                 if response == 2:
                                     replaceAll_Flag = True
                                 elif response == 0:
+                                    break
+                                elif response == 3:
                                     continue
                         shutil.copy2(
                             os.path.join(r, ffile), os.path.join(nr, ffile))
             else:
                 if os.path.exists(new_name):
+                    if skipAll_Flag:
+                        continue
                     if not replaceAll_Flag:
                         response = replaceMSGBOX.show(
                             messageTitle=f'File Exists',
                             messageText=f"{new_name} Already Exists.\nreplace it?")
+                        if response == 4:
+                            skipAll_Flag = True
                         if response == 2:
                             replaceAll_Flag = True
                         elif response == 0:
+                            break
+                        elif response == 3:
                             continue
                 shutil.copy2(i, new_name)
         except PermissionError:
@@ -356,10 +379,21 @@ def Move():
             'Text': 'REPLACE ALL',
             'ForeColor': COLOR['BLACK'],
             'BackColor': COLOR['YELLOW']
+        },
+        {
+            'Text': 'SKIP',
+            'ForeColor': COLOR['BLACK'],
+            'BackColor': COLOR['GREEN']
+        },
+        {
+            'Text': 'SKIP ALL',
+            'ForeColor': COLOR['BLACK'],
+            'BackColor': COLOR['YELLOW']
         }
     ])
     des = os.getcwd()
     replaceAll_Flag = False
+    skipAll_Flag = False
     for i in CLIPBOARD['Fs']:
         name = i.split('/')[-1]
         try:
@@ -375,30 +409,38 @@ def Move():
                     for ffile in f:
                         new_file_name = os.path.join(nr, ffile)
                         if os.path.exists(new_file_name):
+                            if skipAll_Flag:
+                                continue
                             if not replaceAll_Flag:
-                                if os.path.isdir(i):
-                                    ftype = 'Folder'
-                                else:
-                                    ftype = 'File'
                                 response = replaceMSGBOX.show(
-                                    messageTitle=f'{ftype} Exists',
+                                    messageTitle=f'File Exists',
                                     messageText=f"{new_file_name} Already Exists.\nreplace it?")
+                                if response == 4:
+                                    skipAll_Flag = True
                                 if response == 2:
                                     replaceAll_Flag = True
                                 elif response == 0:
+                                    break
+                                elif response == 3:
                                     continue
                         shutil.move(
                             os.path.join(r, ffile), new_file_name)
                 shutil.rmtree(i, ignore_errors=False)
             else:
                 if os.path.exists(new_name):
+                    if skipAll_Flag:
+                        continue
                     if not replaceAll_Flag:
                         response = replaceMSGBOX.show(
                             messageTitle=f'File Exists',
                             messageText=f"{new_name} Already Exists.\nreplace it?")
+                        if response == 4:
+                            skipAll_Flag = True
                         if response == 2:
                             replaceAll_Flag = True
                         elif response == 0:
+                            break
+                        elif response == 3:
                             continue
                 shutil.move(i, new_name)
         except PermissionError:
