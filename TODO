@@ -3,7 +3,7 @@ TODOs
 [X] scroll to see all folders/files of directory
 [X] scroll for form messagebox messageText if does not fit in its place!
 [ ] options and shortcuts [rename, copy, move, delete, new folder, ...]
-
+[X] check move & copy , for existing file/folders, replace & overwrite, ...
 
 Options:
 
@@ -12,7 +12,7 @@ in app:
 [X]    F2           :       rename
 [ ]    F3           :       search
 [X]    X,x          :       cut
-[ ]    C,c          :       copy
+[X]    C,c          :       copy
 [X]    V,v          :       paste
 [X]    N,n          :       NewFolder
 [X]    Ctrl+H       :       show/Dontshow Hidden Files/Folders
@@ -28,3 +28,5 @@ switches:
 
 [X]    -a, --all
                 show all files/folders (show hidden):
+[X]    -v, --VERBOS
+                become more verbos!
