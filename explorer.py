@@ -398,6 +398,8 @@ def Move():
         name = i.split('/')[-1]
         try:
             new_name = os.path.join(des, name)
+            if i == new_name:
+                continue
             if os.path.isdir(i):
                 for r, d, f in os.walk(i):
                     rs = len(i)
