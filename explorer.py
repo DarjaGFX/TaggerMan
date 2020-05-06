@@ -4,7 +4,7 @@ import re
 import sys
 import curses
 import shutil
-from form import BOOLEAN_FORM, ONE_BUTTON_FORM, INPUT_FORM
+from form import INPUT_FORM, MESSAGEBOX
 # import mongoengine
 
 ENTER = 10
@@ -18,6 +18,17 @@ SHIFTDELETE = 383
 PAGEUP = 339
 PAGEDOWN = 338
 VERBOS = False
+
+COLOR = {
+            'BLACK': 0,
+            'RED': 1,
+            'GREEN': 2,
+            'YELLOW': 3,
+            'BLUE': 4,
+            'MAGENTA': 5,
+            'CYAN': 6,
+            'WHITE': 7
+        }
 
 
 CLIPBOARD = {
@@ -175,7 +186,19 @@ def NewFolder(Path, FolderName='UntitledFolder'):
         os.mkdir(FolderName)
     except Exception:
         if os.path.exists(os.path.join(Path, FolderName)):
-            ErrorForm = BOOLEAN_FORM('OK', 'Cancel')
+            ErrorForm = MESSAGEBOX(
+                    [
+                        {
+                            'Text': 'CANCEL',
+                            'ForeColor': COLOR['BLACK'],
+                            'BackColor': COLOR['RED']
+                        },
+                        {
+                            'Text': 'OK',
+                            'ForeColor': COLOR['BLACK'],
+                            'BackColor': COLOR['GREEN']
+                        }
+                    ])
             if ErrorForm.show(
                     messageTitle='Something went wrong!',
                     messageText='Folder exists...\nchoose another name.'
@@ -186,7 +209,13 @@ def NewFolder(Path, FolderName='UntitledFolder'):
                         FolderName=inp.show("Folder Name:")
                     )
         else:
-            ErrorForm = ONE_BUTTON_FORM('Ok')
+            ErrorForm = MESSAGEBOX([
+                {
+                    'Text': 'Ok',
+                    'ForeColor': COLOR['WHITE'],
+                    'BackColor': COLOR['BLACK']
+                }
+                ])
             msg = 'Permission denied'
             ErrorForm.show(
                 title='Something went wrong!',
@@ -211,7 +240,13 @@ def Rename(NewName):
             os.rename(src=item, dst=os.path.join(parentdir(item), nn))
             i += 1
         except PermissionError:
-            ErrorForm = ONE_BUTTON_FORM('Ok')
+            ErrorForm = MESSAGEBOX([
+                    {
+                        'Text': 'Ok',
+                        'ForeColor': COLOR['WHITE'],
+                        'BackColor': COLOR['BLACK']
+                    }
+                ])
             msg = 'Permission denied'
             ErrorForm.show(
                 title='Something went wrong!',
@@ -220,18 +255,64 @@ def Rename(NewName):
 
 
 def Copy():
-    pass
-
-
-def Move():
     des = os.getcwd()
+    replaceAll_Flag = False
     for i in CLIPBOARD['Fs']:
         name = i.split('/')[-1]
         try:
-            shutil.move(i, os.path.join(des, name))
+            new_name = os.path.join(des, name)
+            if os.path.exists(new_name):
+                if not replaceAll_Flag:
+                    msgbox = MESSAGEBOX([
+                            {
+                                'Text': 'CANCEL',
+                                'ForeColor': COLOR['BLACK'],
+                                'BackColor': COLOR['RED']
+                            },
+                            {
+                                'Text': 'REPLACE',
+                                'ForeColor': COLOR['BLACK'],
+                                'BackColor': COLOR['GREEN']
+                            },
+                            {
+                                'Text': 'REPLACE ALL',
+                                'ForeColor': COLOR['BLACK'],
+                                'BackColor': COLOR['YELLOW']
+                            }
+                    ])
+                    if os.path.isdir(i):
+                        ftype = 'Folder'
+                    else:
+                        ftype = 'File'
+                    response = msgbox.show(
+                        messageTitle=f'{ftype} Exists',
+                        messageText=f"{new_name} Already Exists.\nreplace it?")
+                    if response == 2:
+                        replaceAll_Flag = True
+                    elif response == 0:
+                        break
+            if os.path.isdir(i):
+                for r, d, f in os.walk(i):
+                    rs = len(i)
+                    nr = new_name+r[rs:]
+                    try:
+                        os.makedirs(nr)
+                    except FileExistsError:
+                        pass
+                    for ffile in f:
+                        shutil.copy2(
+                            os.path.join(r, ffile), os.path.join(nr, ffile))
+            else:
+                shutil.copy2(i, new_name)
         except PermissionError:
             if VERBOS:
-                ErrorForm = ONE_BUTTON_FORM('Ok')
+                ErrorForm = MESSAGEBOX([
+                    {
+                        'Text': 'Ok',
+                        'ForeColor': COLOR['WHITE'],
+                        'BackColor': COLOR['BLACK']
+                    }
+                ])
                 msg = 'Permission denied'
                 ErrorForm.show(
                     title='Something went wrong!',
@@ -239,17 +320,111 @@ def Move():
                     )
         except Exception:
             if VERBOS:
-                ErrorForm = ONE_BUTTON_FORM('Ok')
-                msg = 'Something went wrong!'
+                ErrorForm = MESSAGEBOX([
+                    {
+                        'Text': 'Ok',
+                        'ForeColor': COLOR['WHITE'],
+                        'BackColor': COLOR['BLACK']
+                    }
+                ])
+                msg = f'{i} could not be copied'
                 ErrorForm.show(
-                    title=f'{i} could not be moved',
+                    title='Something went wrong!',
+                    message=msg
+                    )
+
+
+def Move():
+    des = os.getcwd()
+    replaceAll_Flag = False
+    for i in CLIPBOARD['Fs']:
+        name = i.split('/')[-1]
+        try:
+            new_name = os.path.join(des, name)
+            if os.path.exists(new_name):
+                if not replaceAll_Flag:
+                    msgbox = MESSAGEBOX([
+                            {
+                                'Text': 'CANCEL',
+                                'ForeColor': COLOR['BLACK'],
+                                'BackColor': COLOR['RED']
+                            },
+                            {
+                                'Text': 'REPLACE',
+                                'ForeColor': COLOR['BLACK'],
+                                'BackColor': COLOR['GREEN']
+                            },
+                            {
+                                'Text': 'REPLACE ALL',
+                                'ForeColor': COLOR['BLACK'],
+                                'BackColor': COLOR['YELLOW']
+                            }
+                    ])
+                    if os.path.isdir(i):
+                        ftype = 'Folder'
+                    else:
+                        ftype = 'File'
+                    response = msgbox.show(
+                        messageTitle=f'{ftype} Exists',
+                        messageText=f"{new_name} Already Exists.\nreplace it?")
+                    if response == 2:
+                        replaceAll_Flag = True
+                    elif response == 0:
+                        continue
+            if os.path.isdir(i):
+                for r, d, f in os.walk(i):
+                    rs = len(i)
+                    nr = new_name+r[rs:]
+                    try:
+                        os.makedirs(nr)
+                    except FileExistsError:
+                        pass
+            shutil.move(i, des)
+        except PermissionError:
+            if VERBOS:
+                ErrorForm = MESSAGEBOX([
+                    {
+                        'Text': 'Ok',
+                        'ForeColor': COLOR['WHITE'],
+                        'BackColor': COLOR['BLACK']
+                    }
+                ])
+                msg = 'Permission denied'
+                ErrorForm.show(
+                    title='Something went wrong!',
+                    message=msg
+                    )
+        except Exception:
+            if VERBOS:
+                ErrorForm = MESSAGEBOX([
+                    {
+                        'Text': 'Ok',
+                        'ForeColor': COLOR['WHITE'],
+                        'BackColor': COLOR['BLACK']
+                    }
+                ])
+                msg = f'{i} could not be moved'
+                ErrorForm.show(
+                    title='Something went wrong!',
                     message=msg
                     )
 
 
 def runaction():
     if CLIPBOARD['Action'] == permanent_delete:
-        form = BOOLEAN_FORM(True_key_Text='OK', False_key_Text='CANCEL')
+        form = MESSAGEBOX(
+                    [
+                        {
+                            'Text': 'CANCEL',
+                            'ForeColor': COLOR['BLACK'],
+                            'BackColor': COLOR['RED']
+                        },
+                        {
+                            'Text': 'OK',
+                            'ForeColor': COLOR['BLACK'],
+                            'BackColor': COLOR['GREEN']
+                        }
+                    ])
         if form.show(
                 messageTitle='Deleting These Files/Folders Permanently!',
                 messageText='\n'.join(CLIPBOARD['Fs'])
@@ -264,14 +439,10 @@ def runaction():
 
     elif CLIPBOARD["Action"] == Move:
         Move()
-    # elif CLIPBOARD['Action'] == Move:
-        #  #if exists in destination , ask for replace or new name
-        # form = OK_CANCEL_FORM()
-        # if form.show(
-        #         messageTitle='DELETE',
-        #         messageText='DELETE selected file/folders PERMANENTLY?'
-        #             ):
-        #    CLIPBOARD['Action']()
+
+    elif CLIPBOARD["Action"] == Copy:
+        Copy()
+
     resetClipboard()
 
 
@@ -380,7 +551,8 @@ def exlpore(pwd=None):
                     return exlpore(pwd=pwd)
             elif char == ord('n') or char == ord('N'):
                 form = INPUT_FORM()
-                name = form.show(messageTitle="Folder Name (will be set automaticly if cancel):")
+                msg = "Folder Name (will be set automaticly if cancel):"
+                name = form.show(messageTitle=msg)
                 if name:
                     NewFolder(
                         Path=pwd,
@@ -437,8 +609,6 @@ def exlpore(pwd=None):
                         return exlpore(pwd=parentdir(menu[5]['text']))
                     elif selectedIndex == 5:
                         return exlpore(pwd=pwd)
-                    else:
-                        pass  # TODO: run selected action
                 elif selectedIndex < len(menu)+len(directories):
                     return exlpore(
                             pwd=os.path.join(
