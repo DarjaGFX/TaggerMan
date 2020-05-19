@@ -88,21 +88,14 @@ def draw(menu, directories, files, selectedIndex, PrintStartIndex=0):
     curses.init_pair(3, curses.COLOR_YELLOW, curses.COLOR_BLACK)
 
     menuformat = [
+        '='*x,
+        (' '*(int(x/2)-2))+'Xplore',
+        '='*x,
+        f"[ :>] {menu[0]['text']}",
         '-'*x,
-        f"[ ]{menu[0]['text']}\t[ ]{menu[1]['text']}\t[ ]{menu[2]['text']}\
-\t[ ]{menu[3]['text']}\t[ ]{menu[4]['text']}",
-        '-'*x,
-        f"[ :>] {menu[5]['text']}",
-        '-'*x,
-        f"[ >] {menu[6]['text']}"
+        f"[ >] {menu[1]['text']}"
                  ]
 
-    if PrintStartIndex <= len(menuformat):
-        for i in range(len(menuformat)):
-            try:
-                screen.addstr(i-PrintStartIndex, 0, menuformat[i])
-            except Exception:
-                pass
     for i in range(len(directories)):
         try:
             screen.move(directories[i]['posx']-PrintStartIndex, 0)
@@ -124,6 +117,8 @@ def draw(menu, directories, files, selectedIndex, PrintStartIndex=0):
                      )
         except Exception:
             pass
+    # if PrintStartIndex <= len(menuformat):
+
 
     # draw selections
     for i in range(len(directories)):
@@ -146,6 +141,14 @@ def draw(menu, directories, files, selectedIndex, PrintStartIndex=0):
                             "#",
                             curses.color_pair(2)
                          )
+        except Exception:
+            pass
+
+    for i in range(len(menuformat)):
+        try:
+            if PrintStartIndex > 0 and i == len(menuformat)-1:
+                continue
+            screen.addstr(i, 0, menuformat[i])
         except Exception:
             pass
 
@@ -592,18 +595,14 @@ def exlpore(pwd=None):
         pwd = os.getcwd()
     os.chdir(pwd)
     menu = {
-            0: {'text': 'Insert tag', 'posx': 1, 'posy': 1},
-            1: {'text': 'Remove tag', 'posx': 1, 'posy': 17},
-            2: {'text': 'Modify tag', 'posx': 1, 'posy': 33},
-            3: {'text': 'Search by tag', 'posx': 1, 'posy': 49},
-            4: {'text': 'Exit', 'posx': 1, 'posy': 73},
-            5: {'text': pwd, 'posx': 3, 'posy': 1},
-            6: {'text': '..', 'posx': 5, 'posy': 1},
+            0: {'text': pwd, 'posx': 3, 'posy': 1},
+            1: {'text': '..', 'posx': 5, 'posy': 1},
            }
     selectedIndex = len(menu)-1
     printStartIndex = 0
     indxd = 0
     directories = {}
+    ln_menu = 6
     # Create Directories Dict
     for d in childir(pwd):
         if DONT_SHOW_HIDDEN and d[0] == '.':
@@ -612,7 +611,7 @@ def exlpore(pwd=None):
                             {
                                 indxd: {
                                         'text': d,
-                                        'posx': indxd+len(menu),
+                                        'posx': indxd+ln_menu,
                                         'posy': 1,
                                         'selected': False
                                         }
@@ -629,7 +628,7 @@ def exlpore(pwd=None):
                         {
                             indxf: {
                                     'text': f,
-                                    'posx': indxf+len(menu)+indxd,
+                                    'posx': indxf+ln_menu+indxd,
                                     'posy': 1,
                                     'selected': False
                                     }
@@ -665,6 +664,7 @@ def exlpore(pwd=None):
         while True:
             char = screen.getch()
             ymax, _ = screen.getmaxyx()
+            ymaxFrame = ymax - (ln_menu - 1)
             if char == ord('q') or char == ord('Q'):
                 break
             elif char == ord('x') or char == ord('X'):
@@ -710,12 +710,11 @@ def exlpore(pwd=None):
                          printStartIndex)
             elif char == curses.KEY_LEFT or char == curses.KEY_UP:
                 y, x = curses.getsyx()
-                ymax, _ = screen.getmaxyx()
-                if y == 0:
+                if y == 5 and printStartIndex > 0:
                     printStartIndex -= 1
                 if selectedIndex == 0:
                     selectedIndex = lenAll-1
-                    printStartIndex = lenAll - ymax
+                    printStartIndex = (lenAll - 1) - ymaxFrame
                     if printStartIndex < 0:
                         printStartIndex = 0
                     draw(menu, directories, files, selectedIndex,
@@ -747,9 +746,8 @@ def exlpore(pwd=None):
             elif char == ENTER:
                 if selectedIndex < len(menu):
                     if menu[selectedIndex]['text'] == '..':
-                        return exlpore(pwd=parentdir(menu[5]['text']))
-                    elif selectedIndex == 5:
-                        return exlpore(pwd=pwd)
+                        return exlpore(pwd=parentdir(menu[0]['text']))
+                    return exlpore(pwd=pwd)
                 elif selectedIndex < len(menu)+len(directories):
                     return exlpore(
                             pwd=os.path.join(
@@ -779,43 +777,43 @@ def exlpore(pwd=None):
                     runaction()
                 return exlpore(pwd=pwd)
             elif char == CTRLHOME:
-                selectedIndex = 0
+                selectedIndex = len(menu)-1
                 printStartIndex = 0
                 draw(menu, directories, files, selectedIndex, printStartIndex)
             elif char == CTRLEND:
                 selectedIndex = lenAll-1
-                printStartIndex = lenAll - ymax
+                printStartIndex = (lenAll - 1) - ymaxFrame
                 if printStartIndex < 0:
                     printStartIndex = 0
                 draw(menu, directories, files, selectedIndex, printStartIndex)
             elif char == HOME:
-                selectedIndex = printStartIndex
+                selectedIndex = printStartIndex + 1
                 draw(menu, directories, files, selectedIndex, printStartIndex)
             elif char == END:
-                if printStartIndex+ymax > lenAll:
+                if printStartIndex+ymaxFrame > lenAll:
                     selectedIndex = lenAll-1
                 else:
-                    selectedIndex = printStartIndex+ymax-1
+                    selectedIndex = printStartIndex + ymaxFrame
                 draw(menu, directories, files, selectedIndex, printStartIndex)
             elif char == PAGEUP:
-                if printStartIndex - ymax < 0:
+                if printStartIndex - ymaxFrame < 0:
                     printStartIndex = 0
                 else:
-                    printStartIndex -= ymax
-                if selectedIndex - ymax < 0:
-                    selectedIndex = 0
+                    printStartIndex -= ymaxFrame
+                if selectedIndex - ymaxFrame < 0:
+                    selectedIndex = 1
                 else:
-                    selectedIndex -= ymax
+                    selectedIndex -= ymaxFrame
                 draw(menu, directories, files, selectedIndex, printStartIndex)
             elif char == PAGEDOWN:
-                if printStartIndex + ymax > lenAll-ymax:
-                    printStartIndex = lenAll-ymax
+                if printStartIndex + ymaxFrame > lenAll - ymaxFrame:
+                    printStartIndex = lenAll - ymaxFrame
                 else:
-                    printStartIndex += ymax
-                if selectedIndex + ymax > lenAll-1:
+                    printStartIndex += ymaxFrame
+                if selectedIndex + ymaxFrame > lenAll-1:
                     selectedIndex = lenAll-1
                 else:
-                    selectedIndex += ymax
+                    selectedIndex += ymaxFrame
                 draw(menu, directories, files, selectedIndex, printStartIndex)
 
     except PermissionError:
