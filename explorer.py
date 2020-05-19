@@ -5,7 +5,7 @@ import sys
 import curses
 import shutil
 from form import INPUT_FORM, MESSAGEBOX
-import subprocess
+# import subprocess
 # import mongoengine
 
 ENTER = 10
@@ -41,8 +41,9 @@ CLIPBOARD = {
 
 def find_name(name):
     res = []
-    Res = subprocess.getoutput(f'locate -i {name}')
-    for i in Res.split():
+    # Res = subprocess.getoutput(f'locate -i {name}')
+    Res = os.popen(f'locate -i {name}').read()
+    for i in Res.split('\n'):
         if name.upper() in i.upper().split('/')[-1]:
             res.append(i)
     if res == []:
@@ -77,7 +78,10 @@ def parentdir(path):
 DONT_SHOW_HIDDEN = True
 
 
-def draw(menu, directories, files, selectedIndex, PrintStartIndex=0):
+def draw(
+            menu, directories, files, selectedIndex,
+            PrintStartIndex=0, SearchMode=False
+        ):
     global screen
     y, x = screen.getmaxyx()
     screen.clear()
@@ -87,14 +91,22 @@ def draw(menu, directories, files, selectedIndex, PrintStartIndex=0):
     curses.init_pair(2, curses.COLOR_GREEN, curses.COLOR_BLACK)
     curses.init_pair(3, curses.COLOR_YELLOW, curses.COLOR_BLACK)
 
+    if SearchMode:
+        header = 'Xplore (Search Mode)'
+    else:
+        header = 'Xplore'
     menuformat = [
         '='*x,
-        (' '*(int(x/2)-2))+'Xplore',
+        ((' '*(int(x/2)-int(len(header)/2))) +
+            header+' '*(int(x/2)-int(len(header)/2))),
         '='*x,
         f"[ :>] {menu[0]['text']}",
-        '-'*x,
-        f"[ >] {menu[1]['text']}"
-                 ]
+        '-'*x
+        ]
+    try:
+        menuformat.append(f"[ >] {menu[1]['text']}")
+    except Exception:
+        pass
 
     for i in range(len(directories)):
         try:
@@ -119,8 +131,6 @@ def draw(menu, directories, files, selectedIndex, PrintStartIndex=0):
             pass
     # if PrintStartIndex <= len(menuformat):
 
-
-    # draw selections
     for i in range(len(directories)):
         try:
             if directories[i]['selected']:
@@ -320,8 +330,9 @@ def Copy():
                                     }
                                 ])
                                 response = replaceMSGBOX.show(
-                                    messageTitle=f'File Exists',
-                                    messageText=f"{new_file_name} Already Exists.\nreplace it?")
+                                    messageTitle='File Exists',
+                                    messageText=f"{new_file_name} Already\
+Exists.\nreplace it?")
                                 if response == 4:
                                     skipAll_Flag = True
                                 if response == 2:
@@ -365,8 +376,9 @@ def Copy():
                                     }
                                 ])
                         response = replaceMSGBOX.show(
-                            messageTitle=f'File Exists',
-                            messageText=f"{new_name} Already Exists.\nreplace it?")
+                            messageTitle='File Exists',
+                            messageText=f"{new_name} Already Exists.\n\
+replace it?")
                         if response == 4:
                             skipAll_Flag = True
                         if response == 2:
@@ -458,8 +470,9 @@ def Move():
                                     }
                                 ])
                                 response = replaceMSGBOX.show(
-                                    messageTitle=f'File Exists',
-                                    messageText=f"{new_file_name} Already Exists.\nreplace it?")
+                                    messageTitle='File Exists',
+                                    messageText=f"{new_file_name} Already\
+Exists.\nreplace it?")
                                 if response == 4:
                                     skipAll_Flag = True
                                 if response == 2:
@@ -504,8 +517,9 @@ def Move():
                             }
                         ])
                         response = replaceMSGBOX.show(
-                            messageTitle=f'File Exists',
-                            messageText=f"{new_name} Already Exists.\nreplace it?")
+                            messageTitle='File Exists',
+                            messageText=f"{new_name} Already Exists.\nreplace\
+it?")
                         if response == 4:
                             skipAll_Flag = True
                         if response == 2:
@@ -581,7 +595,7 @@ def runaction():
     resetClipboard()
 
 
-def exlpore(pwd=None):
+def exlpore(pwd=None, SearchMode=None):
     if CLIPBOARD['Action'] is None:
         resetClipboard()
     global DONT_SHOW_HIDDEN
@@ -594,49 +608,85 @@ def exlpore(pwd=None):
     if pwd is None:
         pwd = os.getcwd()
     os.chdir(pwd)
-    menu = {
-            0: {'text': pwd, 'posx': 3, 'posy': 1},
-            1: {'text': '..', 'posx': 5, 'posy': 1},
-           }
-    selectedIndex = len(menu)-1
-    printStartIndex = 0
-    indxd = 0
-    directories = {}
-    ln_menu = 6
-    # Create Directories Dict
-    for d in childir(pwd):
-        if DONT_SHOW_HIDDEN and d[0] == '.':
-            continue
-        directories.update(
+    searchmod_flag = False
+    if SearchMode:
+        searchmod_flag = True
+        menu = {
+                0: {'text': 'Search Result', 'posx': 3, 'posy': 1},
+            }
+        selectedIndex = len(menu)-1
+        printStartIndex = 0
+        indxd = 0
+        directories = {}
+        ln_menu = 6
+        indxf = 0
+        files = {}
+        # Create Files Dict
+        for f in SearchMode:
+            files.update(
                             {
-                                indxd: {
-                                        'text': d,
-                                        'posx': indxd+ln_menu,
+                                indxf: {
+                                        'text': f,
+                                        'posx': indxf+ln_menu+indxd,
                                         'posy': 1,
                                         'selected': False
                                         }
                             }
-                           )
-        indxd += 1
-    indxf = 0
-    files = {}
-    # Create Files Dict
-    for f in childfiles(pwd):
-        if DONT_SHOW_HIDDEN and f[0] == '.':
-            continue
-        files.update(
-                        {
-                            indxf: {
-                                    'text': f,
-                                    'posx': indxf+ln_menu+indxd,
-                                    'posy': 1,
-                                    'selected': False
-                                    }
-                        }
-                    )
-        indxf += 1
-    draw(menu, directories, files, selectedIndex)
-    lenAll = len(menu)+len(directories)+len(files)
+                        )
+            indxf += 1
+        draw(
+                menu, directories, files,
+                selectedIndex, SearchMode=searchmod_flag
+            )
+        lenAll = len(menu)+len(directories)+len(files)
+
+    else:
+        menu = {
+                0: {'text': pwd, 'posx': 3, 'posy': 1},
+                1: {'text': '..', 'posx': 5, 'posy': 1},
+            }
+        selectedIndex = len(menu)-1
+        printStartIndex = 0
+        indxd = 0
+        directories = {}
+        ln_menu = 6
+        # Create Directories Dict
+        for d in childir(pwd):
+            if DONT_SHOW_HIDDEN and d[0] == '.':
+                continue
+            directories.update(
+                                {
+                                    indxd: {
+                                            'text': d,
+                                            'posx': indxd+ln_menu,
+                                            'posy': 1,
+                                            'selected': False
+                                            }
+                                }
+                            )
+            indxd += 1
+        indxf = 0
+        files = {}
+        # Create Files Dict
+        for f in childfiles(pwd):
+            if DONT_SHOW_HIDDEN and f[0] == '.':
+                continue
+            files.update(
+                            {
+                                indxf: {
+                                        'text': f,
+                                        'posx': indxf+ln_menu+indxd,
+                                        'posy': 1,
+                                        'selected': False
+                                        }
+                            }
+                        )
+            indxf += 1
+        draw(
+                menu, directories, files,
+                selectedIndex, SearchMode=searchmod_flag
+            )
+        lenAll = len(menu)+len(directories)+len(files)
 
     def select():
         if selectedIndex >= len(menu):
@@ -703,11 +753,11 @@ def exlpore(pwd=None):
                     selectedIndex = 0
                     printStartIndex = 0
                     draw(menu, directories, files, selectedIndex,
-                         printStartIndex)
+                         printStartIndex, SearchMode=searchmod_flag)
                 else:
                     selectedIndex += 1
                     draw(menu, directories, files, selectedIndex,
-                         printStartIndex)
+                         printStartIndex, SearchMode=searchmod_flag)
             elif char == curses.KEY_LEFT or char == curses.KEY_UP:
                 y, x = curses.getsyx()
                 if y == 5 and printStartIndex > 0:
@@ -718,7 +768,7 @@ def exlpore(pwd=None):
                     if printStartIndex < 0:
                         printStartIndex = 0
                     draw(menu, directories, files, selectedIndex,
-                         printStartIndex)
+                         printStartIndex, SearchMode=searchmod_flag)
                 else:
                     selectedIndex -= 1
                     if (selectedIndex <= len(menu)-1
@@ -726,7 +776,7 @@ def exlpore(pwd=None):
                             printStartIndex > menu[selectedIndex]['posx']):
                         printStartIndex = menu[selectedIndex]['posx']
                     draw(menu, directories, files, selectedIndex,
-                         printStartIndex)
+                         printStartIndex, SearchMode=searchmod_flag)
             elif char == curses.KEY_F2:
                 if not len(CLIPBOARD['Fs']):
                     select()
@@ -739,8 +789,7 @@ def exlpore(pwd=None):
                 name = inp.show('search for: ')
                 if name:
                     opts = find_name(name)
-                    #show options...
-                return exlpore(pwd=pwd)
+                    return exlpore(pwd=pwd, SearchMode=opts)
             elif char == curses.KEY_F5:
                 return exlpore(pwd=pwd)
             elif char == ENTER:
@@ -753,9 +802,15 @@ def exlpore(pwd=None):
                             pwd=os.path.join(
                                 pwd,
                                 directories[selectedIndex-len(menu)]['text']))
+                elif searchmod_flag:
+                    pwd = parentdir(files[selectedIndex-len(menu)]['text'])
+                    return exlpore(pwd=pwd)
             elif char == SPACE:
                 select()
-                draw(menu, directories, files, selectedIndex, printStartIndex)
+                draw(
+                        menu, directories, files, selectedIndex,
+                        printStartIndex, SearchMode=searchmod_flag
+                    )
             elif char == CTRLA:
                 for i in directories.keys():
                     directories[i]['selected'] = True
@@ -765,7 +820,10 @@ def exlpore(pwd=None):
                     files[i]['selected'] = True
                     CLIPBOARD['Fs'].append(
                         os.path.join(pwd, files[i]['text']))
-                draw(menu, directories, files, selectedIndex, printStartIndex)
+                draw(
+                        menu, directories, files, selectedIndex,
+                        printStartIndex, SearchMode=searchmod_flag
+                    )
             elif char == CTRLH:
                 DONT_SHOW_HIDDEN = not DONT_SHOW_HIDDEN
                 return exlpore(pwd=pwd)
@@ -779,22 +837,34 @@ def exlpore(pwd=None):
             elif char == CTRLHOME:
                 selectedIndex = len(menu)-1
                 printStartIndex = 0
-                draw(menu, directories, files, selectedIndex, printStartIndex)
+                draw(
+                        menu, directories, files, selectedIndex,
+                        printStartIndex, SearchMode=searchmod_flag
+                    )
             elif char == CTRLEND:
                 selectedIndex = lenAll-1
                 printStartIndex = (lenAll - 1) - ymaxFrame
                 if printStartIndex < 0:
                     printStartIndex = 0
-                draw(menu, directories, files, selectedIndex, printStartIndex)
+                draw(
+                        menu, directories, files, selectedIndex,
+                        printStartIndex, SearchMode=searchmod_flag
+                    )
             elif char == HOME:
                 selectedIndex = printStartIndex + 1
-                draw(menu, directories, files, selectedIndex, printStartIndex)
+                draw(
+                        menu, directories, files, selectedIndex,
+                        printStartIndex, SearchMode=searchmod_flag
+                    )
             elif char == END:
                 if printStartIndex+ymaxFrame > lenAll:
                     selectedIndex = lenAll-1
                 else:
                     selectedIndex = printStartIndex + ymaxFrame
-                draw(menu, directories, files, selectedIndex, printStartIndex)
+                draw(
+                        menu, directories, files, selectedIndex,
+                        printStartIndex, SearchMode=searchmod_flag
+                    )
             elif char == PAGEUP:
                 if printStartIndex - ymaxFrame < 0:
                     printStartIndex = 0
@@ -804,17 +874,24 @@ def exlpore(pwd=None):
                     selectedIndex = 1
                 else:
                     selectedIndex -= ymaxFrame
-                draw(menu, directories, files, selectedIndex, printStartIndex)
+                draw(
+                        menu, directories, files, selectedIndex,
+                        printStartIndex, SearchMode=searchmod_flag
+                    )
             elif char == PAGEDOWN:
                 if printStartIndex + ymaxFrame > lenAll - ymaxFrame:
-                    printStartIndex = lenAll - ymaxFrame
+                    # printStartIndex = lenAll - ymaxFrame
+                    pass
                 else:
                     printStartIndex += ymaxFrame
                 if selectedIndex + ymaxFrame > lenAll-1:
                     selectedIndex = lenAll-1
                 else:
                     selectedIndex += ymaxFrame
-                draw(menu, directories, files, selectedIndex, printStartIndex)
+                draw(
+                        menu, directories, files, selectedIndex,
+                        printStartIndex, SearchMode=searchmod_flag
+                    )
 
     except PermissionError:
         return exlpore(pwd=pwd)
