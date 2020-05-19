@@ -5,6 +5,7 @@ import sys
 import curses
 import shutil
 from form import INPUT_FORM, MESSAGEBOX
+import subprocess
 # import mongoengine
 
 ENTER = 10
@@ -14,6 +15,7 @@ HOME = 262
 END = 360
 CTRLHOME = 535
 CTRLEND = 530
+CTRLA = 1
 SHIFTDELETE = 383
 PAGEUP = 339
 PAGEDOWN = 338
@@ -35,6 +37,17 @@ CLIPBOARD = {
                 'Action': None,
                 'Fs': []
             }
+
+
+def find_name(name):
+    res = []
+    Res = subprocess.getoutput(f'locate -i {name}')
+    for i in Res.split():
+        if name.upper() in i.upper().split('/')[-1]:
+            res.append(i)
+    if res == []:
+        res = None
+    return res
 
 
 def childir(path):
@@ -722,6 +735,15 @@ def exlpore(pwd=None):
                     CLIPBOARD['Action'] = Rename
                     runaction()
                 return exlpore(pwd=pwd)
+            elif char == curses.KEY_F3:
+                inp = INPUT_FORM()
+                name = inp.show('search for: ')
+                if name:
+                    opts = find_name(name)
+                    #show options...
+                return exlpore(pwd=pwd)
+            elif char == curses.KEY_F5:
+                return exlpore(pwd=pwd)
             elif char == ENTER:
                 if selectedIndex < len(menu):
                     if menu[selectedIndex]['text'] == '..':
@@ -735,6 +757,16 @@ def exlpore(pwd=None):
                                 directories[selectedIndex-len(menu)]['text']))
             elif char == SPACE:
                 select()
+                draw(menu, directories, files, selectedIndex, printStartIndex)
+            elif char == CTRLA:
+                for i in directories.keys():
+                    directories[i]['selected'] = True
+                    CLIPBOARD['Fs'].append(
+                        os.path.join(pwd, directories[i]['text']))
+                for i in files.keys():
+                    files[i]['selected'] = True
+                    CLIPBOARD['Fs'].append(
+                        os.path.join(pwd, files[i]['text']))
                 draw(menu, directories, files, selectedIndex, printStartIndex)
             elif char == CTRLH:
                 DONT_SHOW_HIDDEN = not DONT_SHOW_HIDDEN

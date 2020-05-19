@@ -8,9 +8,11 @@ TODOs
 Options:
 
 in app:
+[X]    Q,q          :       Exit
 [X]    space        :       select file/folder
 [X]    F2           :       rename
 [ ]    F3           :       search
+[X]    F5           :       Refresh / deselect
 [X]    X,x          :       cut
 [X]    C,c          :       copy
 [X]    V,v          :       paste
@@ -19,6 +21,7 @@ in app:
 [X]    Shift+Del    :       permanently Delete All Selected Files/Folders
 [X]    Ctrl+Home    :       Top of page
 [X]    Ctrl+End     :       End of page
+[X]    Ctrl+A       :       Select All 
 [X]    Home         :       Top of current screen
 [X]    End          :       End of current screen
 [X]    PageUp       :       One Page up
