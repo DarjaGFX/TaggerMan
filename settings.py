@@ -1,0 +1,1 @@
+UPDATERPATH = '~/bin/updater'

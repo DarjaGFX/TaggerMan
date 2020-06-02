@@ -5,8 +5,8 @@ import sys
 import curses
 import shutil
 from form import INPUT_FORM, MESSAGEBOX
-# import subprocess
-# import mongoengine
+import settings
+
 
 ENTER = 10
 SPACE = 32
@@ -41,7 +41,7 @@ CLIPBOARD = {
 
 def find_name(name):
     res = []
-    # Res = subprocess.getoutput(f'locate -i {name}')
+    os.system(settings.UPDATERPATH)
     Res = os.popen(f'locate -i {name}').read()
     for i in Res.split('\n'):
         if name.upper() in i.upper().split('/')[-1]:
@@ -787,9 +787,10 @@ def exlpore(pwd=None, SearchMode=None):
             elif char == curses.KEY_F3:
                 inp = INPUT_FORM()
                 name = inp.show('search for: ')
+                opts = []
                 if name:
                     opts = find_name(name)
-                    return exlpore(pwd=pwd, SearchMode=opts)
+                return exlpore(pwd=pwd, SearchMode=opts)
             elif char == curses.KEY_F5:
                 return exlpore(pwd=pwd)
             elif char == ENTER:
