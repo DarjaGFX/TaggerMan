@@ -5,7 +5,9 @@ import sys
 import curses
 import shutil
 from form import INPUT_FORM, MESSAGEBOX
+import Help
 import settings
+import tagman as tm
 
 
 ENTER = 10
@@ -777,6 +779,16 @@ def exlpore(pwd=None, SearchMode=None):
                         printStartIndex = menu[selectedIndex]['posx']
                     draw(menu, directories, files, selectedIndex,
                          printStartIndex, SearchMode=searchmod_flag)
+            elif char == curses.KEY_F1:
+                box = MESSAGEBOX(
+                        [{
+                            'Text': 'OK',
+                            'ForeColor': COLOR['BLACK'],
+                            'BackColor': COLOR['GREEN']
+                        }]
+                )
+                box.show("HELP", Help.MESSAGE)
+                return exlpore(pwd=pwd)
             elif char == curses.KEY_F2:
                 if not len(CLIPBOARD['Fs']):
                     select()
@@ -790,6 +802,13 @@ def exlpore(pwd=None, SearchMode=None):
                 opts = []
                 if name:
                     opts = find_name(name)
+                return exlpore(pwd=pwd, SearchMode=opts)
+            elif char == curses.KEY_F4:
+                inp = INPUT_FORM()
+                name = inp.show('search for Tag: ')
+                opts = []
+                if name:
+                    opts = tm.searchForTag(name)
                 return exlpore(pwd=pwd, SearchMode=opts)
             elif char == curses.KEY_F5:
                 return exlpore(pwd=pwd)
